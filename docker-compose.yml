@@ -1,0 +1,45 @@
+services:
+  # ─── PostgreSQL Database ────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: studypilot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: studypilot
+      POSTGRES_PASSWORD: studypilot_secret
+      POSTGRES_DB: studypilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studypilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Next.js Application ────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: studypilot-app
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env.local
+    environment:
+      DATABASE_URL: postgresql://studypilot:studypilot_secret@db:5432/studypilot
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://0.0.0.0:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  pgdata:
