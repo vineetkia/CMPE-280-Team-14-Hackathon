@@ -94,7 +94,7 @@ describe('ChatPage - with active conversation', () => {
 
   it('renders ChatInput when conversation is active', () => {
     renderWithProviders(<ChatPage />);
-    expect(screen.getByPlaceholderText('Ask me anything...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Ask me anything... or use the mic to speak')).toBeInTheDocument();
   });
 
   it('sends message from empty state prompt click', () => {

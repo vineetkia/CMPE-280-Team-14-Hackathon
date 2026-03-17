@@ -1,8 +1,10 @@
 "use client";
 
+import { useCallback, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { VoiceInput } from './VoiceInput';
 
 interface ChatInputProps {
   input: string;
@@ -12,6 +14,19 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ input, onInputChange, onSend, isLoading }: ChatInputProps) {
+  // Keep a ref to current input for voice transcript appending
+  const inputRef = useRef(input);
+  useEffect(() => { inputRef.current = input; }, [input]);
+
+  const handleVoiceTranscript = useCallback(
+    (text: string) => {
+      const current = inputRef.current;
+      const separator = current.trim() ? ' ' : '';
+      onInputChange(current + separator + text);
+    },
+    [onInputChange]
+  );
+
   return (
     <div className="p-6 border-t border-[var(--border)]">
       <div className="flex gap-3">
@@ -24,10 +39,11 @@ export function ChatInput({ input, onInputChange, onSend, isLoading }: ChatInput
               onSend();
             }
           }}
-          placeholder="Ask me anything..."
+          placeholder="Ask me anything... or use the mic to speak"
           className="flex-1 min-h-[60px] max-h-[200px] bg-white/50 dark:bg-gray-800/50 resize-none"
           disabled={isLoading}
         />
+        <VoiceInput onTranscript={handleVoiceTranscript} disabled={isLoading} />
         <Button
           onClick={onSend}
           disabled={!input.trim() || isLoading}
@@ -38,7 +54,7 @@ export function ChatInput({ input, onInputChange, onSend, isLoading }: ChatInput
         </Button>
       </div>
       <p className="text-xs text-[var(--muted-foreground)] mt-3 text-center">
-        Press Enter to send, Shift + Enter for new line
+        Press Enter to send · Shift + Enter for new line · 🎤 Click mic for voice input
       </p>
     </div>
   );
