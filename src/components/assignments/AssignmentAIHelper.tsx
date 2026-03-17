@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
 } from '@/components/ui/dialog';
+import { MarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { streamChat, AIError, UserContext } from '@/lib/azure-openai';
 import { toast } from '@/hooks/useToast';
 import type { Assignment } from '@/types';
@@ -144,10 +145,16 @@ export function AssignmentAIHelper({ assignment }: AssignmentAIHelperProps) {
                   ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
                   : 'bg-[var(--secondary)] text-[var(--foreground)]'
               }`}>
-                <div className="whitespace-pre-wrap break-words prose-chat">
-                  {msg.content}
-                  {isLoading && i === messages.length - 1 && msg.role === 'assistant' && (
-                    <span className="streaming-cursor" />
+                <div className="break-words">
+                  {msg.role === 'assistant' ? (
+                    <>
+                      <MarkdownRenderer content={msg.content} />
+                      {isLoading && i === messages.length - 1 && (
+                        <span className="streaming-cursor" />
+                      )}
+                    </>
+                  ) : (
+                    <span className="whitespace-pre-wrap prose-chat">{msg.content}</span>
                   )}
                 </div>
               </div>

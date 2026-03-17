@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface StreamingTextProps {
   content: string;
@@ -53,11 +54,7 @@ export function StreamingText({ content, isStreaming }: StreamingTextProps) {
   }, [content, isStreaming]);
 
   if (!isStreaming || displayLength >= content.length) {
-    return (
-      <span className="whitespace-pre-wrap break-words prose-chat">
-        {content}
-      </span>
-    );
+    return <MarkdownRenderer content={content} />;
   }
 
   const revealed = content.slice(0, displayLength);

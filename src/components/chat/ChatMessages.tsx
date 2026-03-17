@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChatMessage } from '@/types';
 import { StreamingText } from './StreamingText';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
@@ -49,6 +50,8 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, streamingCon
                         <StreamingText content={message.content} isStreaming={true} />
                         <span className="streaming-cursor" />
                       </>
+                    ) : message.role === 'assistant' ? (
+                      <MarkdownRenderer content={message.content} />
                     ) : (
                       <span className="whitespace-pre-wrap break-words prose-chat">
                         {message.content}

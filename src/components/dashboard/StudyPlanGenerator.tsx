@@ -5,6 +5,7 @@ import { Sparkles, Copy, Check, Loader2, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { glassCard, gradientButton } from '@/lib/constants';
+import { MarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { useTodos } from '@/hooks/useTodos';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useEvents } from '@/hooks/useEvents';
@@ -116,8 +117,8 @@ export function StudyPlanGenerator() {
             className="mt-4"
           >
             <div className="max-h-[400px] overflow-y-auto rounded-xl bg-[var(--secondary)]/30 p-4">
-              <div className="whitespace-pre-wrap text-sm text-[var(--foreground)] font-sans leading-relaxed prose-chat">
-                {plan}
+              <div className="text-[var(--foreground)]">
+                <MarkdownRenderer content={plan} />
                 {isGenerating && (
                   <span className="streaming-cursor" />
                 )}
