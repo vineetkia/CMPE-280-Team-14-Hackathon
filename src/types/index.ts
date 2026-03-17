@@ -44,3 +44,27 @@ export interface Conversation {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Voice Assistant types
+export type VoiceOrbState = 'idle' | 'listening' | 'processing' | 'speaking';
+
+export type VoiceIntentType =
+  | 'navigate'
+  | 'add_todo'
+  | 'add_assignment'
+  | 'add_event'
+  | 'new_chat'
+  | 'ask_ai'
+  | 'switch_theme'
+  | 'set_dark_mode'
+  | 'set_light_mode'
+  | 'stop_listening'
+  | 'unknown';
+
+export interface VoiceIntent {
+  type: VoiceIntentType;
+  target?: string;
+  payload?: string;
+  confidence: number;
+  rawTranscript: string;
+}
