@@ -1,33 +1,57 @@
 "use client";
 
-import { useCallback, useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Assignment } from '@/types';
-
-const STORAGE_KEY = 'studypilot_assignments';
 
 type SortField = 'title' | 'dueDate' | 'priority' | 'status';
 
 export function useAssignments() {
-  const [assignments, setAssignments] = useLocalStorage<Assignment[]>(STORAGE_KEY, []);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addAssignment = useCallback((assignment: Omit<Assignment, 'id' | 'createdAt'>) => {
-    const newAssignment: Assignment = {
-      ...assignment,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
+  useEffect(() => {
+    fetch('/api/assignments')
+      .then(res => res.json())
+      .then((data: Assignment[]) => {
+        setAssignments(data.map(a => ({
+          ...a,
+          dueDate: new Date(a.dueDate),
+          createdAt: new Date(a.createdAt),
+        })));
+      })
+      .catch(err => console.error('[useAssignments] fetch error:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const addAssignment = useCallback(async (assignment: Omit<Assignment, 'id' | 'createdAt'>) => {
+    const res = await fetch('/api/assignments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assignment),
+    });
+    const newAssignment = await res.json();
+    const parsed: Assignment = {
+      ...newAssignment,
+      dueDate: new Date(newAssignment.dueDate),
+      createdAt: new Date(newAssignment.createdAt),
     };
-    setAssignments(prev => [...prev, newAssignment]);
-    return newAssignment;
-  }, [setAssignments]);
+    setAssignments(prev => [parsed, ...prev]);
+    return parsed;
+  }, []);
 
-  const updateAssignment = useCallback((id: string, updates: Partial<Assignment>) => {
+  const updateAssignment = useCallback(async (id: string, updates: Partial<Assignment>) => {
+    await fetch(`/api/assignments/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
     setAssignments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
-  }, [setAssignments]);
+  }, []);
 
-  const deleteAssignment = useCallback((id: string) => {
+  const deleteAssignment = useCallback(async (id: string) => {
+    await fetch(`/api/assignments/${id}`, { method: 'DELETE' });
     setAssignments(prev => prev.filter(a => a.id !== id));
-  }, [setAssignments]);
+  }, []);
 
   const stats = useMemo(() => ({
     total: assignments.length,
@@ -74,5 +98,6 @@ export function useAssignments() {
     deleteAssignment,
     stats,
     getFilteredAndSorted,
+    loading,
   };
 }
