@@ -1,30 +1,53 @@
 "use client";
 
-import { useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useState, useCallback, useEffect } from 'react';
 import { CalendarEvent } from '@/types';
 
-const STORAGE_KEY = 'studypilot_events';
-
 export function useEvents() {
-  const [events, setEvents] = useLocalStorage<CalendarEvent[]>(STORAGE_KEY, []);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addEvent = useCallback((event: Omit<CalendarEvent, 'id'>) => {
-    const newEvent: CalendarEvent = {
-      ...event,
-      id: crypto.randomUUID(),
+  useEffect(() => {
+    fetch('/api/events')
+      .then(res => res.json())
+      .then((data: CalendarEvent[]) => {
+        setEvents(data.map(e => ({
+          ...e,
+          date: new Date(e.date),
+        })));
+      })
+      .catch(err => console.warn('[useEvents] fetch error:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const addEvent = useCallback(async (event: Omit<CalendarEvent, 'id'>) => {
+    const res = await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event),
+    });
+    const newEvent = await res.json();
+    const parsed: CalendarEvent = {
+      ...newEvent,
+      date: new Date(newEvent.date),
     };
-    setEvents(prev => [...prev, newEvent]);
-    return newEvent;
-  }, [setEvents]);
+    setEvents(prev => [...prev, parsed]);
+    return parsed;
+  }, []);
 
-  const updateEvent = useCallback((id: string, updates: Partial<CalendarEvent>) => {
+  const updateEvent = useCallback(async (id: string, updates: Partial<CalendarEvent>) => {
+    await fetch(`/api/events/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
-  }, [setEvents]);
+  }, []);
 
-  const deleteEvent = useCallback((id: string) => {
+  const deleteEvent = useCallback(async (id: string) => {
+    await fetch(`/api/events/${id}`, { method: 'DELETE' });
     setEvents(prev => prev.filter(e => e.id !== id));
-  }, [setEvents]);
+  }, []);
 
   const getEventsForDate = useCallback((date: Date) => {
     return events.filter(event => {
@@ -40,5 +63,6 @@ export function useEvents() {
     updateEvent,
     deleteEvent,
     getEventsForDate,
+    loading,
   };
 }
