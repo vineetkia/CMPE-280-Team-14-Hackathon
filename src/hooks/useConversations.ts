@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useLocalStorage } from './useLocalStorage';
 import { Conversation, ChatMessage } from '@/types';
 import { streamChat, AIError } from '@/lib/azure-openai';
 import { toast } from '@/hooks/useToast';
-
-const STORAGE_KEY = 'studypilot_conversations';
 
 function getMockResponse(): string {
   const mockResponses = [
@@ -17,16 +14,39 @@ function getMockResponse(): string {
   return mockResponses[Math.floor(Math.random() * mockResponses.length)];
 }
 
+function parseConversation(c: Conversation): Conversation {
+  return {
+    ...c,
+    createdAt: new Date(c.createdAt),
+    updatedAt: new Date(c.updatedAt),
+    messages: c.messages.map(m => ({
+      ...m,
+      timestamp: new Date(m.timestamp),
+    })),
+  };
+}
+
 export function useConversations() {
-  const [conversations, setConversations] = useLocalStorage<Conversation[]>(STORAGE_KEY, []);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const activeConversation = conversations.find(c => c.id === activeConversationId) ?? null;
 
-  // Cleanup: abort any in-flight request on unmount
+  // Fetch conversations from API on mount
+  useEffect(() => {
+    fetch('/api/conversations')
+      .then(res => res.json())
+      .then((data: Conversation[]) => {
+        setConversations(data.map(parseConversation));
+      })
+      .catch(err => console.error('[useConversations] fetch error:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -35,32 +55,37 @@ export function useConversations() {
     };
   }, []);
 
-  const createConversation = useCallback(() => {
-    const newConversation: Conversation = {
-      id: crypto.randomUUID(),
-      title: 'New Conversation',
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setConversations(prev => [newConversation, ...prev]);
-    setActiveConversationId(newConversation.id);
-    return newConversation;
-  }, [setConversations]);
+  const createConversation = useCallback(async () => {
+    const res = await fetch('/api/conversations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'New Conversation' }),
+    });
+    const newConv = parseConversation(await res.json());
+    setConversations(prev => [newConv, ...prev]);
+    setActiveConversationId(newConv.id);
+    return newConv;
+  }, []);
 
-  const deleteConversation = useCallback((id: string) => {
+  const deleteConversation = useCallback(async (id: string) => {
+    await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
     setConversations(prev => prev.filter(c => c.id !== id));
     if (id === activeConversationId) {
       setActiveConversationId(null);
     }
-  }, [setConversations, activeConversationId]);
+  }, [activeConversationId]);
 
-  const renameConversation = useCallback((id: string, newTitle: string) => {
+  const renameConversation = useCallback(async (id: string, newTitle: string) => {
     if (!newTitle.trim()) return;
+    await fetch(`/api/conversations/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newTitle.trim() }),
+    });
     setConversations(prev => prev.map(c =>
       c.id === id ? { ...c, title: newTitle.trim(), updatedAt: new Date() } : c
     ));
-  }, [setConversations]);
+  }, []);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
@@ -68,36 +93,31 @@ export function useConversations() {
     let convId = activeConversationId;
 
     if (!convId) {
-      const newConv: Conversation = {
-        id: crypto.randomUUID(),
-        title: text.slice(0, 50),
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: text.slice(0, 50) }),
+      });
+      const newConv = parseConversation(await res.json());
       setConversations(prev => [newConv, ...prev]);
       convId = newConv.id;
       setActiveConversationId(convId);
     }
 
+    const targetConvId = convId;
+
+    // Save user message to DB
+    const userMsgRes = await fetch(`/api/conversations/${targetConvId}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'user', content: text }),
+    });
     const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: text,
+      ...await userMsgRes.json(),
       timestamp: new Date(),
     };
 
-    const targetConvId = convId;
-
-    // Get the current conversation before updating (for building chat history)
-    const updatedConv = conversations.find(c => c.id === targetConvId) ?? {
-      id: targetConvId,
-      title: text.slice(0, 50),
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
+    // Update local state with user message
     setConversations(prev => prev.map(c => {
       if (c.id !== targetConvId) return c;
       return {
@@ -111,7 +131,7 @@ export function useConversations() {
     setIsLoading(true);
     setStreamingContent('');
 
-    // Create empty assistant message placeholder
+    // Create placeholder assistant message
     const assistantMsgId = crypto.randomUUID();
     const assistantMessage: ChatMessage = {
       id: assistantMsgId,
@@ -120,27 +140,26 @@ export function useConversations() {
       timestamp: new Date(),
     };
 
-    // Add placeholder to conversation
     setConversations(prev => prev.map(c =>
       c.id === targetConvId
         ? { ...c, messages: [...c.messages, assistantMessage], updatedAt: new Date() }
         : c
     ));
 
-    // Try streaming from AI
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     try {
-      const chatMessages = updatedConv.messages
+      // Get current conversation messages for context
+      const currentConv = conversations.find(c => c.id === targetConvId);
+      const chatMessages = (currentConv?.messages || [])
         .concat([userMessage])
-        .map(m => ({ role: m.role, content: m.content }));
+        .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
       let accumulated = '';
       for await (const chunk of streamChat(chatMessages, undefined, 'chat', abortController.signal)) {
         accumulated += chunk;
         setStreamingContent(accumulated);
-        // Update the assistant message content in real-time
         setConversations(prev => prev.map(c =>
           c.id === targetConvId
             ? {
@@ -152,11 +171,18 @@ export function useConversations() {
             : c
         ));
       }
+
+      // Save assistant message to DB
+      await fetch(`/api/conversations/${targetConvId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'assistant', content: accumulated }),
+      });
+
       setStreamingContent('');
       setIsLoading(false);
     } catch (error) {
       if (error instanceof AIError && error.shouldFallback) {
-        // Fallback to mock response
         toast({
           title: 'Using offline mode',
           description: 'AI is currently unavailable. Using simulated responses.',
@@ -172,8 +198,13 @@ export function useConversations() {
               }
             : c
         ));
+        // Save mock response to DB
+        await fetch(`/api/conversations/${targetConvId}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'assistant', content: mockResponse }),
+        });
       } else if ((error as Error).name !== 'AbortError') {
-        // Real error - remove placeholder and show error toast
         toast({
           title: 'Something went wrong',
           description: 'Please try again.',
@@ -188,7 +219,7 @@ export function useConversations() {
       setStreamingContent('');
       setIsLoading(false);
     }
-  }, [activeConversationId, conversations, setConversations]);
+  }, [activeConversationId, conversations]);
 
   return {
     conversations,
@@ -201,5 +232,6 @@ export function useConversations() {
     deleteConversation,
     renameConversation,
     sendMessage,
+    loading,
   };
 }
