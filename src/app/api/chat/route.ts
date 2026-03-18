@@ -77,8 +77,12 @@ export async function POST(request: NextRequest) {
       })),
     ];
 
-    // Use Chat Completions API: {endpoint}chat/completions
-    const apiUrl = `${endpoint.replace(/\/+$/, '')}/chat/completions`;
+    // Azure OpenAI REST API: two URL formats supported
+    // 1. Standard Azure: {base}/openai/deployments/{deployment}/chat/completions?api-version=...
+    // 2. OpenAI-compatible: {base}/openai/v1/chat/completions (model param selects deployment)
+    const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2025-04-01-preview';
+    const baseUrl = endpoint.replace(/\/+$/, '').replace(/\/openai\/v1\/?$/, '').replace(/\/openai\/?$/, '');
+    const apiUrl = `${baseUrl}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
 
     const azureResponse = await fetch(apiUrl, {
       method: 'POST',
@@ -87,9 +91,9 @@ export async function POST(request: NextRequest) {
         'api-key': apiKey,
       },
       body: JSON.stringify({
-        model: deployment,
         messages: chatMessages,
         stream,
+        max_completion_tokens: 4096,
       }),
       signal: AbortSignal.timeout(60000),
     });
@@ -97,6 +101,8 @@ export async function POST(request: NextRequest) {
     if (!azureResponse.ok) {
       const status = azureResponse.status;
       const errorText = await azureResponse.text().catch(() => 'Unknown error');
+      console.error(`[Chat API] Azure returned ${status}: ${errorText}`);
+      console.error(`[Chat API] URL was: ${apiUrl}`);
 
       if (status === 429) {
         return NextResponse.json(
@@ -104,15 +110,21 @@ export async function POST(request: NextRequest) {
           { status: 429 }
         );
       }
-      if (status === 401) {
+      if (status === 401 || status === 403) {
         return NextResponse.json(
-          { error: 'Invalid API key', fallback: true },
+          { error: 'Invalid API key or unauthorized', fallback: true },
           { status: 401 }
+        );
+      }
+      if (status === 404) {
+        return NextResponse.json(
+          { error: `Model deployment '${deployment}' not found. Check AZURE_OPENAI_DEPLOYMENT env var.`, fallback: true },
+          { status: 404 }
         );
       }
 
       return NextResponse.json(
-        { error: `Azure API error: ${errorText}`, fallback: true },
+        { error: `Azure API error (${status}): ${errorText}`, fallback: true },
         { status: status }
       );
     }
