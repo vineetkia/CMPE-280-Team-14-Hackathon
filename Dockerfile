@@ -12,7 +12,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client (dummy DATABASE_URL — only needed for type generation, not connection)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npx prisma generate
 
 # Build Next.js (standalone output)
@@ -29,25 +30,26 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install Prisma CLI globally for migrations at startup
-RUN npm install -g prisma@6
-
 # Copy built assets
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy Prisma files for migrations
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy public assets (may be empty but directory must exist)
+RUN mkdir -p ./public
+COPY --from=builder /app/public/ ./public/
 
-# Copy seed script
-COPY --from=builder /app/prisma/seed.sql ./prisma/seed.sql
+# Copy Prisma schema and migration files
+COPY --from=builder /app/prisma ./prisma
+
+# Copy ALL node_modules from builder so prisma CLI + its dependencies (effect, etc.) work
+COPY --from=builder /app/node_modules ./node_modules
 
 # Startup script
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
+
+# Set ownership so nextjs user can run prisma
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
