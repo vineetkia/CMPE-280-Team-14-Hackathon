@@ -101,7 +101,10 @@ export function VoiceOrb() {
       {/* ── Transcript bubbles ─────────────────────────── */}
       <AnimatePresence>
         {orbState === 'idle' && isPassiveListening && (
-          <VoiceTranscript key="wake-hint" text='Say "Hey StudyPilot"' type="hint" />
+          <VoiceTranscript key="wake-hint" text='Say "Hey StudyPilot" or click to speak' type="hint" />
+        )}
+        {orbState === 'idle' && !isPassiveListening && (
+          <VoiceTranscript key="click-hint" text="Click to activate voice" type="hint" />
         )}
         {orbState === 'listening' && (
           <VoiceTranscript key="transcript" text={transcript || 'Listening...'} type="listening" />
