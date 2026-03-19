@@ -8,6 +8,7 @@ const defaultProps = {
   onSelect: vi.fn(),
   onDelete: vi.fn(),
   onCreate: vi.fn(),
+  onRename: vi.fn(),
   isOpen: false,
   onClose: vi.fn(),
 };
