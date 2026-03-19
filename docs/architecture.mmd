@@ -1,0 +1,50 @@
+graph TB
+    subgraph Client["🖥️ Browser Client"]
+        UI["React UI<br/>Next.js 16 App Router"]
+        VA["Voice Assistant<br/>Azure Speech SDK"]
+        Hooks["Custom Hooks<br/>useTodos, useAssignments,<br/>useEvents, useConversations"]
+        Theme["Theme Context<br/>Dark/Light Mode"]
+        AI_Client["AI Client<br/>SSE Streaming"]
+    end
+
+    subgraph NextJS["⚡ Next.js Server (Docker)"]
+        API_Todos["API: /api/todos"]
+        API_Assignments["API: /api/assignments"]
+        API_Events["API: /api/events"]
+        API_Conversations["API: /api/conversations"]
+        API_Chat["API: /api/chat"]
+        API_StudyPlan["API: /api/ai/study-plan"]
+        API_TodoSuggestions["API: /api/ai/todo-suggestions"]
+        API_Health["API: /api/health"]
+        Prisma["Prisma ORM v6"]
+    end
+
+    subgraph External["☁️ Azure Cloud Services"]
+        AzureOpenAI["Azure OpenAI<br/>GPT-5.2"]
+        AzureSpeech["Azure Speech Services<br/>STT + TTS"]
+    end
+
+    subgraph Docker["🐳 Docker Compose"]
+        PG["PostgreSQL 16<br/>Alpine"]
+    end
+
+    UI --> Hooks
+    UI --> Theme
+    UI --> VA
+    Hooks --> API_Todos
+    Hooks --> API_Assignments
+    Hooks --> API_Events
+    Hooks --> API_Conversations
+    AI_Client --> API_Chat
+    AI_Client --> API_StudyPlan
+    AI_Client --> API_TodoSuggestions
+    VA --> AzureSpeech
+    API_Todos --> Prisma
+    API_Assignments --> Prisma
+    API_Events --> Prisma
+    API_Conversations --> Prisma
+    API_Health --> Prisma
+    Prisma --> PG
+    API_Chat --> AzureOpenAI
+    API_StudyPlan --> AzureOpenAI
+    API_TodoSuggestions --> AzureOpenAI
