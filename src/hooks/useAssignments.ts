@@ -60,12 +60,21 @@ export function useAssignments() {
     completed: assignments.filter(a => a.status === 'completed').length,
   }), [assignments]);
 
+  // Unique grade values for filter dropdown
+  const uniqueGrades = useMemo(() => {
+    const grades = assignments
+      .map(a => a.grade?.trim())
+      .filter((g): g is string => !!g);
+    return [...new Set(grades)].sort();
+  }, [assignments]);
+
   const getFilteredAndSorted = useCallback((
     search: string,
     status: string,
     priority: string,
     sortField: SortField,
-    sortDirection: 'asc' | 'desc'
+    sortDirection: 'asc' | 'desc',
+    grade?: string
   ) => {
     return assignments
       .filter(a => {
@@ -73,7 +82,12 @@ export function useAssignments() {
                              a.subject.toLowerCase().includes(search.toLowerCase());
         const matchesStatus = status === 'all' || a.status === status;
         const matchesPriority = priority === 'all' || a.priority === priority;
-        return matchesSearch && matchesStatus && matchesPriority;
+        const matchesGrade = !grade || grade === 'all'
+          ? true
+          : grade === 'ungraded'
+            ? !a.grade || !a.grade.trim()
+            : a.grade?.trim().toLowerCase() === grade.toLowerCase();
+        return matchesSearch && matchesStatus && matchesPriority && matchesGrade;
       })
       .sort((a, b) => {
         let comparison = 0;
@@ -97,6 +111,7 @@ export function useAssignments() {
     updateAssignment,
     deleteAssignment,
     stats,
+    uniqueGrades,
     getFilteredAndSorted,
     loading,
   };
