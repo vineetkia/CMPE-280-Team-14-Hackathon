@@ -19,16 +19,61 @@ CMPE 280 - Web UI Design and Development | Spring 2026 | San Jose State Universi
 
 ---
 
-## Project Summary
+## Problem Statement
 
-Students juggle assignments across Canvas, deadlines in their heads, and scattered tools that don't talk to each other. StudyPilot solves this by providing a single, unified dashboard where students can manage todos, track assignments, view their calendar, and get instant AI-powered study help -- all without switching tabs. Built with Next.js 16 and powered by Azure OpenAI GPT-5.2, the app features real-time AI streaming, a glassmorphism design system with dark/light themes, and a fully responsive interface that works seamlessly on desktop and mobile.
+**The Problem:** College students are overwhelmed. They juggle assignments across Canvas, keep deadlines in their heads, and use scattered tools that don't talk to each other -- Google Calendar for events, a notes app for todos, and random websites for study help. There is no single place where a student can see everything they need to do, plan their study time, and get instant help understanding course material.
+
+**Our Solution:** StudyPilot is a unified study dashboard that brings everything into one place. Instead of switching between five different apps, students open StudyPilot and immediately see their todos, assignments, calendar, and can ask an AI tutor for help -- all in one tab. The AI doesn't just answer questions; it looks at your actual assignments and deadlines to generate personalized study plans and suggest tasks you should create. For students with disabilities, the entire app can be controlled by voice alone -- no keyboard or mouse required.
+
+**In one sentence:** StudyPilot is an AI-powered study companion that replaces the scattered mess of student productivity tools with a single, intelligent dashboard.
+
+---
+
+## Demo Walkthrough (for Presentation)
+
+Here is a suggested flow for demonstrating StudyPilot in class:
+
+1. **Dashboard** — Open the app and show the four stat cards counting up. Point out the glassmorphism cards and the animated gradient background. Toggle dark mode to show the theme system.
+2. **AI Study Plan** — Click "Generate Study Plan" on the dashboard. The AI reads your actual assignments and deadlines and streams a personalized day-by-day plan in real time.
+3. **Todos** — Navigate to Todos. Add a task, filter by priority, then click "AI Suggest" to show the AI analyzing your workload and recommending tasks. Add one with a single click.
+4. **Assignments** — Open the Assignments page. Click the sparkle icon on any assignment to open the AI tutor — it knows which assignment you selected and gives contextual help.
+5. **Calendar** — Show the month grid on desktop, then resize the browser to demonstrate the responsive agenda view on mobile.
+6. **AI Chat** — Open the Chat page and ask a study question. Point out the streaming text effect (words appear one by one, not all at once) and the blinking cursor.
+7. **Voice Assistant** — Click the animated orb in the bottom-left corner. Say "Add a todo to study for the math exam" and watch it create the task. Say "Go to calendar" to navigate by voice. Show the orb's color transitions between idle → listening → processing → speaking states.
+8. **Accessibility** — Show the `prefers-reduced-motion` behavior (all animations stop). Mention ARIA labels, keyboard navigation, and WCAG AA contrast.
+
+---
+
+## Technical Summary
+
+Built with Next.js 16, backed by a PostgreSQL database running in Docker, and powered by Azure OpenAI GPT-5.2, the app features real-time AI streaming, a voice-first interface using Azure Speech Services, a glassmorphism design system with dark/light themes, and a fully responsive interface that works seamlessly on desktop and mobile.
+
+### Key Highlights
+
+- **4 AI-powered features** — Chat, Study Plan Generator, Assignment AI Tutor, Todo Suggestions — all using GPT-5.2 with real-time streaming
+- **Voice-first interface** — Full app control via voice commands with wake word "Hey StudyPilot"
+- **Full-stack architecture** — PostgreSQL 16 + Prisma ORM + 14 RESTful API routes + Docker containerization
+- **315 unit tests** across 52 test files with 87%+ code coverage
+- **50+ React components** with a glassmorphism design system, dark/light themes, and 15+ reusable animation variants
+- **Accessibility-first** — WCAG AA compliance, `prefers-reduced-motion` support, ARIA labels, keyboard navigation, screen reader support
+
+### Accessibility for Persons with Disabilities
+
+StudyPilot is designed with inclusivity at its core. **Students with visual impairments, motor disabilities, or learning differences can operate the entire application using voice commands alone.** The Siri-style voice assistant -- powered by Azure Neural Speech-to-Text and Text-to-Speech -- allows users to:
+
+- **Create, complete, and manage todos** by speaking naturally (e.g., "Add a todo to study for the math exam")
+- **Navigate between pages** using voice commands (e.g., "Go to assignments", "Open calendar")
+- **Ask AI study questions** and receive spoken responses through Azure Neural TTS (`en-US-JennyNeural`)
+- **Activate hands-free** with the "Hey StudyPilot" wake word -- no clicks required
+
+Beyond voice, the app supports `prefers-reduced-motion` for users with vestibular disorders, proper ARIA labels for screen readers, keyboard navigation with skip-to-content links, and WCAG AA color contrast in both themes. This makes StudyPilot a genuinely accessible study tool -- not just for the average student, but for students who rely on assistive technologies.
 
 ---
 
 ## Individual Contributions
 
 ### Vineet Kumar
-Led AI integration and the Chat module. Built the AI Chat page with full conversational interface, streaming text display (Gemini-style character reveal), conversation management sidebar, and chat history persistence. Implemented the Azure OpenAI client library (`azure-openai.ts`) with SSE streaming via async generators, the server-side API routes (`/api/chat`, `/api/ai/study-plan`, `/api/ai/todo-suggestions`) that proxy to Azure OpenAI GPT-5.2 with feature-specific system prompts, and graceful fallback to mock responses when credentials are unavailable. Also set up the project foundation -- Next.js 16 with App Router, TypeScript config, Tailwind CSS v4, and all build tooling (Vitest, ESLint, PostCSS, Turbopack).
+Led AI integration, backend architecture, voice assistant, and the Chat module. Built the full PostgreSQL backend with Docker Compose, Prisma ORM v6 schema with 5 models, 14 RESTful API routes for CRUD operations, and migrated all frontend hooks from localStorage to real API persistence. Implemented the Siri-style voice assistant using Azure Speech SDK for STT/TTS with wake word detection ("Hey StudyPilot"), natural language command processing, and a CSS smoke/aurora animated orb with organic blob drifting and state-driven color palettes. Built the AI Chat page with streaming text display, conversation management, and chat history persisted to PostgreSQL. Implemented the Azure OpenAI client library with SSE streaming via async generators, server-side API proxy routes, and graceful fallback to mock responses. Also set up the project foundation -- Next.js 16 with App Router, TypeScript config, Tailwind CSS v4, Docker containerization, and all build tooling.
 
 ### Vritika Malhotra
 Owned the Dashboard experience and the shared UI component library. Built the Dashboard page with four animated stat cards (animated number counters, staggered entrances, progress bars), RecentTasks summary, UpcomingAssignments preview, AskAI quick-query widget, and the StudyPlanGenerator that analyzes user data to create personalized study schedules. Implemented 14 reusable UI primitives using Radix UI (Dialog, Select, Checkbox, Progress, ScrollArea, AlertDialog, Toast, Label, Badge, Button, Input, Textarea, Skeleton) with the CVA variant system. Created the layout system -- Sidebar with animated `layoutId` navigation indicator, TopBar with animated theme toggle, and ClientLayout with ErrorBoundary and page transitions.
@@ -58,7 +103,10 @@ A table-based view for managing assignments across courses. You can sort, filter
 Desktop users get a full month grid with color-coded event dots. On mobile, it switches to a chronological agenda view for easier scrolling. Events can be added with type classification (class, exam, assignment, study session) and each type gets its own color for quick scanning.
 
 ### 5. AI Chat
-A conversational interface for asking study questions, getting explanations, or working through problems. Messages stream in real-time via Server-Sent Events, so you see the response building word by word instead of waiting for a wall of text. Conversation history is persisted locally, and you can manage multiple conversations with a sidebar conversation list.
+A conversational interface for asking study questions, getting explanations, or working through problems. Messages stream in real-time via Server-Sent Events, so you see the response building word by word instead of waiting for a wall of text. Conversation history is persisted to the PostgreSQL database, and you can manage multiple conversations with a sidebar conversation list.
+
+### 6. Voice Assistant
+A Siri-style voice interface that lets users control the entire application hands-free. The animated orb uses a smoke/aurora effect -- five independently drifting color blobs with organic fade pulses create an ethereal, gaseous atmosphere around a glass sphere. Each of the four states (idle, listening, processing, speaking) has a unique color palette and animation speed, with state icons (mic, wave bars, bouncing dots, wave form) transitioning smoothly via Framer Motion. Powered by Azure Speech SDK for high-accuracy speech-to-text and Azure Neural TTS (`en-US-JennyNeural`) for natural-sounding spoken responses. Supports a "Hey StudyPilot" wake word for passive activation, natural language commands for CRUD operations (e.g., "Add a todo to study for physics"), page navigation, and conversational AI queries -- all with spoken feedback.
 
 ---
 
@@ -72,9 +120,12 @@ A conversational interface for asking study questions, getting explanations, or 
 | Animations | Framer Motion (`motion/react`) |
 | UI Components | Radix UI primitives, custom glassmorphism system |
 | AI Backend | Azure OpenAI (GPT-5.2), Server-Sent Events streaming |
-| State Management | React hooks + localStorage persistence |
+| Voice Assistant | Azure Speech SDK (STT + TTS), wake word detection |
+| Database | PostgreSQL 16 with Prisma ORM v6 |
+| Containerization | Docker Compose (PostgreSQL + Next.js) |
+| State Management | React hooks + REST API persistence |
 | Testing | Vitest + React Testing Library (315 tests, 87%+ coverage) |
-| Deployment | Ready for Vercel / Netlify |
+| Deployment | Docker Compose / Vercel + managed PostgreSQL |
 
 ---
 
@@ -260,18 +311,144 @@ We decomposed the UI into focused, single-responsibility components with a clear
   - `shared/` -- EmptyState
   - `todos/` -- TodoItem, TodoForm, TodoFilters, TodoHeader, TodoAISuggestions
 - **14 reusable UI primitives** built on Radix UI (Button, Input, Textarea, Dialog, AlertDialog, Select, Checkbox, Label, Badge, Progress, ScrollArea, Skeleton, Toast, Toaster)
-- **7 custom hooks:**
-  - `useTodos` -- CRUD operations, filtering, completion tracking, progress percentage
-  - `useAssignments` -- Assignment management with computed stats (completed count, etc.)
-  - `useEvents` -- Calendar event management
-  - `useConversations` -- Chat history with conversation switching and persistence
-  - `useLocalStorage` -- Generic typed localStorage wrapper with SSR safety and date serialization
+- **Custom hooks:**
+  - `useTodos` -- CRUD operations via REST API, filtering, completion tracking, progress percentage
+  - `useAssignments` -- Assignment management via REST API with computed stats
+  - `useEvents` -- Calendar event management via REST API
+  - `useConversations` -- Chat history via REST API with conversation switching and AI streaming
   - `useReducedMotion` -- `prefers-reduced-motion` media query detection
   - `useToast` -- Toast notification queue management
-- **1 context provider** (`ThemeContext`) for light/dark mode with localStorage persistence
+- **2 context providers:** `ThemeContext` (light/dark mode), `VoiceAssistantContext` (Azure Speech SDK, wake word, command routing)
 - **1 ErrorBoundary** for graceful crash recovery with retry UI
 
-The hooks encapsulate all data operations and persist to localStorage, which means the app works entirely client-side with no backend database required. We chose this deliberately -- for a personal study tool, localStorage keeps things simple while avoiding auth complexity, and the data stays on the student's device.
+All data hooks communicate with the PostgreSQL backend through Next.js API routes and Prisma ORM. The frontend makes standard `fetch()` calls to RESTful endpoints, and the database handles persistence, ensuring data survives browser clears and is accessible from any device.
+
+---
+
+## Backend Architecture
+
+StudyPilot uses a full-stack architecture with a PostgreSQL database, Prisma ORM, and RESTful API routes -- all containerized with Docker.
+
+### Architecture Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        Browser Client                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐   │
+│  │  React UI    │  │ Voice Asst.  │  │   AI Streaming Client    │   │
+│  │  (Next.js)   │  │ (Azure SDK)  │  │   (SSE via fetch)        │   │
+│  └──────┬───────┘  └──────┬───────┘  └────────────┬─────────────┘   │
+│         │                 │                        │                  │
+└─────────┼─────────────────┼────────────────────────┼─────────────────┘
+          │ REST API        │ WebSocket              │ SSE Stream
+          ▼                 ▼                        ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Next.js API Routes (Server)                       │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────┐   │
+│  │ /api/todos │ │/api/assign.│ │/api/events │ │/api/convers.   │   │
+│  │  GET POST  │ │  GET POST  │ │  GET POST  │ │  GET POST      │   │
+│  │  PATCH DEL │ │  PATCH DEL │ │  PATCH DEL │ │  PATCH DEL     │   │
+│  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └──────┬─────────┘   │
+│        │              │              │                │              │
+│  ┌─────┴──────────────┴──────────────┴────────────────┴──────┐      │
+│  │                    Prisma ORM v6                            │      │
+│  │           (Connection pooling, type-safe queries)          │      │
+│  └────────────────────────────┬───────────────────────────────┘      │
+│                               │                                      │
+│  ┌────────────────────────────┼──────────────────────────────┐      │
+│  │ /api/chat  │ /api/ai/study-plan │ /api/ai/todo-suggestions│      │
+│  │            │                    │                          │      │
+│  └────────────┼────────────────────┼──────────────────────────┘      │
+│               │ SSE Proxy          │                                 │
+└───────────────┼────────────────────┼─────────────────────────────────┘
+                │                    │
+                ▼                    ▼
+┌───────────────────────┐  ┌───────────────────────┐
+│   PostgreSQL 16       │  │   Azure Cloud          │
+│   (Docker Container)  │  │   ┌─────────────────┐  │
+│                       │  │   │ OpenAI GPT-5.2  │  │
+│   Tables:             │  │   │ (Chat, Plans,   │  │
+│   • todos             │  │   │  Suggestions)   │  │
+│   • assignments       │  │   └─────────────────┘  │
+│   • calendar_events   │  │   ┌─────────────────┐  │
+│   • conversations     │  │   │ Speech Services │  │
+│   • messages          │  │   │ (STT + TTS)     │  │
+│                       │  │   └─────────────────┘  │
+└───────────────────────┘  └───────────────────────┘
+```
+
+### Database Schema (Prisma)
+
+Five models with relations, managed via Prisma migrations:
+
+| Model | Fields | Purpose |
+|-------|--------|---------|
+| `Todo` | id, title, description, completed, priority, category, dueDate | Task management |
+| `Assignment` | id, title, subject, description, dueDate, status, priority, grade | Assignment tracking |
+| `CalendarEvent` | id, title, description, date, endDate, type, color | Calendar events |
+| `Conversation` | id, title, messages[] | Chat history container |
+| `Message` | id, role, content, timestamp, conversationId | Individual chat messages |
+
+### API Routes
+
+| Endpoint | Methods | Description |
+|----------|---------|-------------|
+| `/api/todos` | GET, POST | List all todos / create new todo |
+| `/api/todos/[id]` | PATCH, DELETE | Update / delete a specific todo |
+| `/api/assignments` | GET, POST | List all assignments / create new |
+| `/api/assignments/[id]` | PATCH, DELETE | Update / delete a specific assignment |
+| `/api/events` | GET, POST | List all calendar events / create new |
+| `/api/events/[id]` | PATCH, DELETE | Update / delete a specific event |
+| `/api/conversations` | GET, POST | List conversations (with messages) / create new |
+| `/api/conversations/[id]` | GET, PATCH, DELETE | Get / rename / delete a conversation |
+| `/api/conversations/[id]/messages` | POST | Add a message to a conversation |
+| `/api/chat` | POST | Azure OpenAI streaming proxy |
+| `/api/ai/study-plan` | POST | AI study plan generation (streaming) |
+| `/api/ai/todo-suggestions` | POST | AI todo suggestions (JSON) |
+| `/api/health` | GET | Database connectivity check |
+
+### Docker Infrastructure
+
+The application is fully containerized with Docker Compose:
+
+- **`studypilot-db`**: PostgreSQL 16 Alpine with health checks and persistent volume
+- **`studypilot-app`**: Multi-stage Next.js build (deps → builder → runner) with standalone output, Prisma migrations on startup, runs as non-root user
+
+---
+
+## Voice Assistant
+
+The voice assistant is a core differentiator -- it makes StudyPilot usable for students with disabilities who cannot use a traditional mouse/keyboard interface.
+
+### How It Works
+
+1. **Wake Word**: Say "Hey StudyPilot" to activate (passive listening via Azure Speech SDK)
+2. **Speech-to-Text**: Azure Speech SDK captures and transcribes speech with high accuracy
+3. **Intent Processing**: Natural language is parsed into commands (CRUD operations, navigation, AI queries)
+4. **Action Execution**: Commands are routed to the appropriate API endpoint or page navigation
+5. **Text-to-Speech**: Azure Neural TTS (`en-US-JennyNeural`) speaks the response back to the user
+
+### Supported Voice Commands
+
+| Category | Examples |
+|----------|---------|
+| **Todo Management** | "Add a todo to study for physics exam", "Complete my first todo", "Show my todos" |
+| **Navigation** | "Go to assignments", "Open calendar", "Show dashboard" |
+| **AI Queries** | "What is the Pythagorean theorem?", "Help me study for my CS midterm" |
+| **Control** | "Hey StudyPilot" (wake), click orb to activate/deactivate |
+
+### Visual Feedback (Siri-Style Orb)
+
+The voice orb uses a CSS smoke/aurora animation system. Five color blobs drift along independent organic paths with staggered fade pulses, creating a gaseous, living atmosphere around a glass sphere with core glow and specular highlights. All animations use pure CSS `@keyframes` (imported via `voice-orb.css`) for reliable rendering across page reloads.
+
+| State | Color Palette | Speed | Icon |
+|-------|--------------|-------|------|
+| Idle | Indigo/violet | 1× (slow drift) | Microphone |
+| Listening | Purple/magenta/cyan | 2× (energetic) | Animated wave bars |
+| Processing | Indigo/periwinkle | 1.5× (steady) | Bouncing dots |
+| Speaking | Cyan/teal/emerald | 1.8× (flowing) | Sound wave form |
+
+The orb respects `prefers-reduced-motion` -- all CSS and Framer Motion animations are disabled, showing a static glass sphere with the appropriate state icon.
 
 ---
 
@@ -280,7 +457,7 @@ The hooks encapsulate all data operations and persist to localStorage, which mea
 Four distinct AI-powered features, all backed by Azure OpenAI GPT-5.2:
 
 ### 1. AI Chat
-Full conversational interface at `/chat`. Messages stream in real-time via SSE. Users can start multiple conversations, and history persists across sessions via localStorage. Suggested prompts help students get started when they are not sure what to ask. The conversation list in the sidebar lets you switch between past chats.
+Full conversational interface at `/chat`. Messages stream in real-time via SSE. Users can start multiple conversations, and history persists to the PostgreSQL database. Suggested prompts help students get started when they are not sure what to ask. The conversation list in the sidebar lets you switch between past chats.
 
 ### 2. Study Plan Generator
 Lives on the dashboard. When triggered, it gathers all your todos (with completion status and priorities), assignments (with due dates and status), and calendar events, sends them as structured context to GPT-5.2 with a study-planning system prompt, and streams back a day-by-day study plan with specific action items. The plan can be copied to clipboard or regenerated with one click.
@@ -322,38 +499,69 @@ We mocked Framer Motion globally in tests to avoid animation-related timing issu
 
 ## How to Run
 
+### Option 1: Docker (Recommended)
+
+The easiest way to run StudyPilot with the full PostgreSQL backend:
+
 ```bash
 # Clone the repository
 git clone https://github.com/vineetkia/CMPE-280-Team-14-Hackathon-.git
 cd CMPE-280-Team-14-Hackathon-
 
+# Start PostgreSQL database
+docker compose up db -d
+
+# Wait for database to be healthy, then run migrations
+npx prisma migrate deploy
+
+# (Optional) Seed the database with sample data
+docker exec -i studypilot-db psql -U studypilot < prisma/seed.sql
+
+# Install dependencies and start dev server
+npm install
+npm run dev
+```
+
+### Option 2: Full Docker Compose (Production)
+
+```bash
+# Build and start both PostgreSQL and Next.js in containers
+docker compose up --build -d
+
+# Seed the database (optional)
+docker exec -i studypilot-db psql -U studypilot < prisma/seed.sql
+
+# App is now running at http://localhost:3001
+```
+
+> **Note:** Docker Compose maps port 3001 on your machine to port 3000 inside the container. For local development (Option 1), the app runs on http://localhost:3000.
+
+### Option 3: Local Development (No Docker)
+
+If you have PostgreSQL installed locally:
+
+```bash
 # Install dependencies
 npm install
 
-# Set up environment (optional -- AI features work without this, using fallbacks)
+# Set up environment
 cp .env.example .env.local
-# Add your Azure OpenAI credentials to .env.local
+# Edit .env.local with your DATABASE_URL and optional Azure credentials
+
+# Run database migrations
+npx prisma migrate deploy
 
 # Start development server
 npm run dev
-
-# Run tests
-npm test
-
-# Run tests with coverage report
-npm run test:coverage
-
-# Production build
-npm run build
 ```
 
-The app runs fully without Azure credentials. All AI features gracefully fall back to static responses, so you can explore the complete UI and functionality without any API keys.
+The app runs fully without Azure credentials. All AI features gracefully fall back to static responses, and the voice assistant falls back to the browser's Web Speech API.
 
 ### Available Scripts
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start dev server with Turbopack |
+| `npm run dev` | Start dev server (Turbopack enabled by default in Next.js 16) |
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
@@ -361,51 +569,77 @@ The app runs fully without Azure credentials. All AI features gracefully fall ba
 | `npm run test:run` | Run tests once |
 | `npm run test:coverage` | Run tests with V8 coverage report |
 | `npm run test:ui` | Run tests with Vitest UI |
+| `docker compose up db -d` | Start PostgreSQL container |
+| `docker compose up --build` | Build and start all services |
+| `npx prisma migrate deploy` | Run database migrations |
+| `npx prisma studio` | Open Prisma database GUI |
 
 ---
 
 ## Environment Variables
 
-```
-NEXT_PUBLIC_AZURE_OPENAI_ENDPOINT=https://your-resource.cognitiveservices.azure.com/openai/responses?api-version=2025-04-01-preview
+```bash
+# Database (required)
+DATABASE_URL=postgresql://studypilot:studypilot_secret@localhost:5432/studypilot
+
+# Azure OpenAI (optional -- falls back to mock responses)
+AZURE_OPENAI_ENDPOINT=https://your-resource.cognitiveservices.azure.com/openai/v1/
 AZURE_OPENAI_API_KEY=your-api-key-here
-AZURE_OPENAI_MODEL=gpt-5.2
+AZURE_OPENAI_DEPLOYMENT=your-deployment-name
+
+# Azure Speech Services (optional -- falls back to Web Speech API)
+AZURE_SPEECH_KEY=your-speech-key-here
+AZURE_SPEECH_REGION=westus
 ```
 
-All three are optional. Without them, AI features use simulated responses. See `.env.example` for the template.
+`DATABASE_URL` is required for the PostgreSQL backend. All Azure credentials are optional -- AI features fall back to mock responses and the voice assistant falls back to the browser's Web Speech API.
 
 ---
 
 ## Project Structure
 
 ```
-src/
-├── app/                        # Next.js App Router pages + API routes
-│   ├── api/
-│   │   ├── chat/              # Azure OpenAI streaming proxy (main endpoint)
-│   │   └── ai/               # Feature-specific AI endpoints
-│   ├── assignments/           # Assignment tracker page
-│   ├── calendar/              # Calendar page
-│   ├── chat/                  # AI chat page
-│   ├── todos/                 # Todo manager page
-│   ├── layout.tsx             # Root layout
-│   └── page.tsx               # Dashboard
-├── components/
-│   ├── assignments/           # AssignmentCard, AIHelper, Stats, Filters, Form, Table (6)
-│   ├── calendar/              # CalendarGrid, CalendarAgenda, CalendarHeader, EventForm (4)
-│   ├── chat/                  # ChatMessages, ChatInput, ChatEmptyState, ConversationList, StreamingText (5)
-│   ├── dashboard/             # StatCard, RecentTasks, UpcomingAssignments, AskAI, StudyPlanGenerator (5)
-│   ├── layout/                # Sidebar, TopBar, ClientLayout (3)
-│   ├── shared/                # EmptyState (1)
-│   ├── todos/                 # TodoItem, TodoForm, TodoFilters, TodoHeader, TodoAISuggestions (5)
-│   ├── ui/                    # 14 reusable primitives (Button, Dialog, Select, etc.)
-│   └── ErrorBoundary.tsx      # Crash recovery with retry UI
-├── context/                   # ThemeContext (light/dark mode provider)
-├── hooks/                     # 7 custom hooks (useTodos, useAssignments, useEvents, etc.)
-├── lib/                       # Utilities, constants, animations, azure-openai client
-├── mocks/                     # Seed data for first-run experience
-├── types/                     # TypeScript interfaces
-└── __tests__/                 # 52 test files mirroring src/ structure
+├── docker-compose.yml              # PostgreSQL + Next.js service definitions
+├── Dockerfile                      # Multi-stage build (deps → builder → runner)
+├── docker-entrypoint.sh            # Runs migrations then starts the app
+├── prisma/
+│   ├── schema.prisma               # Database schema (5 models)
+│   ├── migrations/                 # Prisma migration history
+│   └── seed.sql                    # Sample data for development
+├── src/
+│   ├── app/                        # Next.js App Router pages + API routes
+│   │   ├── api/
+│   │   │   ├── todos/             # CRUD: GET, POST, PATCH, DELETE
+│   │   │   ├── assignments/       # CRUD: GET, POST, PATCH, DELETE
+│   │   │   ├── events/            # CRUD: GET, POST, PATCH, DELETE
+│   │   │   ├── conversations/     # CRUD + nested messages endpoint
+│   │   │   ├── chat/              # Azure OpenAI streaming proxy
+│   │   │   ├── ai/               # study-plan, todo-suggestions
+│   │   │   └── health/           # Database connectivity check
+│   │   ├── assignments/           # Assignment tracker page
+│   │   ├── calendar/              # Calendar page
+│   │   ├── chat/                  # AI chat page
+│   │   ├── todos/                 # Todo manager page
+│   │   ├── layout.tsx             # Root layout
+│   │   └── page.tsx               # Dashboard
+│   ├── components/
+│   │   ├── assignments/           # AssignmentCard, AIHelper, Stats, Filters, Form, Table (6)
+│   │   ├── calendar/              # CalendarGrid, CalendarAgenda, CalendarHeader, EventForm (4)
+│   │   ├── chat/                  # ChatMessages, ChatInput, ChatEmptyState, ConversationList, StreamingText (5)
+│   │   ├── dashboard/             # StatCard, RecentTasks, UpcomingAssignments, AskAI, StudyPlanGenerator (5)
+│   │   ├── layout/                # Sidebar, TopBar, ClientLayout (3)
+│   │   ├── shared/                # EmptyState (1)
+│   │   ├── todos/                 # TodoItem, TodoForm, TodoFilters, TodoHeader, TodoAISuggestions (5)
+│   │   ├── voice/                 # VoiceOrb (smoke/aurora CSS animation), VoiceTranscript, voice-orb.css (3)
+│   │   ├── ui/                    # 14 reusable primitives (Button, Dialog, Select, etc.)
+│   │   └── ErrorBoundary.tsx      # Crash recovery with retry UI
+│   ├── context/                   # ThemeContext, VoiceAssistantContext
+│   ├── hooks/                     # Custom hooks (useTodos, useAssignments, useEvents, etc.)
+│   ├── lib/                       # prisma.ts, azure-openai.ts, constants, animations
+│   ├── types/                     # TypeScript interfaces
+│   └── __tests__/                 # 52 test files mirroring src/ structure
+└── docs/
+    └── architecture.mmd           # Mermaid architecture diagram
 ```
 
 ---
@@ -417,6 +651,8 @@ src/
 | `next` 16.1.7 | React framework with App Router and Turbopack |
 | `react` / `react-dom` 19.2.3 | UI library (React 19 with concurrent features) |
 | `motion` 12.38.0 | Animation library (Framer Motion) |
+| `@prisma/client` 6.x | Type-safe PostgreSQL ORM |
+| `microsoft-cognitiveservices-speech-sdk` | Azure Speech-to-Text and Text-to-Speech |
 | `@radix-ui/react-dialog` | Accessible modal dialogs |
 | `@radix-ui/react-select` | Accessible dropdown selects |
 | `@radix-ui/react-checkbox` | Accessible checkboxes |
@@ -477,7 +713,7 @@ We followed a component-driven architecture with three tiers:
 
 **Tier 3 -- Page Orchestrators (5 pages):** These are thin wrappers that call custom hooks, manage local UI state (which dialog is open, which filters are active), and compose Tier 2 components. No business logic, no direct localStorage calls.
 
-**State management:** We deliberately avoided Redux or Zustand. Custom hooks (`useTodos`, `useAssignments`, `useEvents`, `useConversations`) encapsulate all CRUD operations and persist to localStorage. Each hook returns typed data and computed values (like progress percentage or filtered results). This keeps the component tree simple -- hooks at the top, props flowing down.
+**State management:** We deliberately avoided Redux or Zustand. Custom hooks (`useTodos`, `useAssignments`, `useEvents`, `useConversations`) encapsulate all CRUD operations and communicate with the PostgreSQL backend via RESTful API routes. Each hook returns typed data, a loading state, and computed values (like progress percentage or filtered results). This keeps the component tree simple -- hooks at the top, props flowing down, with the database as the single source of truth.
 
 ### 4. Animations and Interactions
 
@@ -550,18 +786,22 @@ We deliberately avoided the "flat white dashboard" look that dominates most prod
 Clear, relatable problem that every student on the team has experienced firsthand. Realistic scope for a four-person team working within a semester. Well-defined target user (college students managing coursework across multiple classes). Five distinct modules that each solve a specific pain point without trying to boil the ocean.
 
 ### Technical Execution (6 pts)
-Next.js 16 with App Router and TypeScript throughout the entire codebase. 315 tests with 87%+ coverage across 52 test files. Clean component decomposition with 40+ components and 7 custom hooks. Real AI integration with SSE streaming (not just a fetch-and-display wrapper). Server-side API proxy for secure credential handling. Centralized animation library and design token system.
+Next.js 16 with App Router and TypeScript throughout the entire codebase. Full PostgreSQL backend with Prisma ORM, 14 RESTful API routes, and Docker containerization. Azure Speech SDK voice assistant with Siri-style smoke/aurora animated orb. 315 tests with 87%+ coverage across 52 test files. Clean component decomposition with 40+ components and custom hooks. Real AI integration with SSE streaming (not just a fetch-and-display wrapper). Server-side API proxy for secure credential handling. Centralized animation library and design token system.
 
 ### Engineering Decision-Making (4 pts)
+- **PostgreSQL + Prisma ORM** over localStorage -- real database with migrations, relations, and server-side persistence. Data survives browser clears and enables multi-device access
+- **Docker Compose** for one-command infrastructure setup -- PostgreSQL + Next.js containerized with health checks and persistent volumes
+- **Azure Speech SDK** for voice assistant -- enterprise-grade STT/TTS with fallback to Web Speech API when credentials are unavailable
+- **Multi-stage Docker build** -- deps → builder → runner stages minimize image size, non-root user for security
 - Glassmorphism design system with shared tokens instead of ad-hoc per-component styling
-- localStorage over a backend database -- appropriate for personal study data, eliminates auth complexity, keeps data on-device
 - SSE streaming for AI responses -- dramatically better UX than waiting 5-10 seconds for a complete response
 - `useReducedMotion` hook and `prefers-reduced-motion` CSS for users who need reduced motion
-- Graceful AI fallbacks so the app is fully functional without credentials or network access
+- Graceful AI and voice fallbacks so the app is fully functional without credentials or network access
 - Centralized animation library to prevent motion inconsistency across independently-built features
 - No AI SDK dependency -- direct `fetch()` to Azure OpenAI REST API keeps the bundle lean (~80 lines of streaming client code)
 
 ### UI/UX Quality and Accessibility (3 pts)
+- **Voice-first interface** for students with disabilities -- full app control via voice commands with Azure Neural TTS spoken feedback
 - Full dark mode with persistent user preference
 - Responsive design -- sidebar collapses on mobile, calendar switches from grid to agenda view, forms adapt to screen width
 - Skip-to-content link for keyboard navigation
@@ -570,6 +810,7 @@ Next.js 16 with App Router and TypeScript throughout the entire codebase. 315 te
 - Error boundaries prevent full-page crashes with retry UI
 - Semantic HTML with proper heading hierarchy
 - Color contrast tested for both light and dark themes
+- Siri-style smoke/aurora animated voice orb with visual state feedback (idle/listening/processing/speaking)
 
 ### Team Collaboration (3 pts)
 Component-based architecture enabled parallel development -- team members could work on different modules without merge conflicts. Shared design tokens and the centralized animation library kept the visual language consistent across independently-built features. Centralized hooks meant data layer changes did not ripple into UI code across the codebase.
