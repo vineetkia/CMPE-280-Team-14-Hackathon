@@ -68,9 +68,10 @@ interface State {
   transcript: string;
   feedback: string;
   error: string | null;
+  micGranted: boolean;
 }
 
-const INITIAL: State = { orbState: 'idle', transcript: '', feedback: '', error: null };
+const INITIAL: State = { orbState: 'idle', transcript: '', feedback: '', error: null, micGranted: false };
 
 type Action =
   | { type: 'START_LISTENING' }
@@ -79,7 +80,8 @@ type Action =
   | { type: 'PROCESSING_COMPLETE'; feedback: string }
   | { type: 'SPEAKING_COMPLETE' }
   | { type: 'ERROR'; error: string }
-  | { type: 'CANCEL' };
+  | { type: 'CANCEL' }
+  | { type: 'MIC_GRANTED' };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -96,7 +98,9 @@ function reducer(state: State, action: Action): State {
     case 'ERROR':
       return { ...state, orbState: 'idle', error: action.error, transcript: '', feedback: '' };
     case 'CANCEL':
-      return { ...INITIAL };
+      return { ...INITIAL, micGranted: state.micGranted };
+    case 'MIC_GRANTED':
+      return { ...state, micGranted: true };
     default:
       return state;
   }
@@ -193,12 +197,13 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
   const processingRef = useRef(false);
   const modeRef = useRef<'off' | 'wake' | 'command'>('off');
   const desiredModeRef = useRef<'off' | 'wake'>('off');
+  const startingRef = useRef(false); // Prevent concurrent startRecognizer calls
 
   const azureSdkRef = useRef<SpeechSDK | null>(null);
   const azureRecognizerRef = useRef<InstanceType<SpeechSDK['SpeechRecognizer']> | null>(null);
   const commandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wakeRetryCountRef = useRef(0);
-  const MAX_WAKE_RETRIES = 3;
+  const MAX_WAKE_RETRIES = 5;
 
   const pathRef = useRef(pathname);
   const themeRef = useRef(theme);
@@ -214,26 +219,39 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
   const executeRef = useRef<(transcript: string) => Promise<void>>(async () => {});
 
   // ─── Stop Azure recognizer ─────────────────────────────
-  const stopRecognizer = useCallback(() => {
-    modeRef.current = 'off';
-    if (commandTimeoutRef.current) {
-      clearTimeout(commandTimeoutRef.current);
-      commandTimeoutRef.current = null;
-    }
-    if (azureRecognizerRef.current) {
-      const recognizer = azureRecognizerRef.current;
-      azureRecognizerRef.current = null;
-      recognizer.recognizing = undefined as never;
-      recognizer.recognized = undefined as never;
-      recognizer.canceled = undefined as never;
-      recognizer.sessionStopped = undefined as never;
-      try {
-        recognizer.stopContinuousRecognitionAsync(
-          () => { try { recognizer.close(); } catch { /* ok */ } },
-          () => { try { recognizer.close(); } catch { /* ok */ } }
-        );
-      } catch { /* ok */ }
-    }
+  const stopRecognizer = useCallback((): Promise<void> => {
+    return new Promise((resolve) => {
+      modeRef.current = 'off';
+      if (commandTimeoutRef.current) {
+        clearTimeout(commandTimeoutRef.current);
+        commandTimeoutRef.current = null;
+      }
+      if (azureRecognizerRef.current) {
+        const recognizer = azureRecognizerRef.current;
+        azureRecognizerRef.current = null;
+        // Detach all event handlers BEFORE stopping to prevent ghost callbacks
+        recognizer.recognizing = undefined as never;
+        recognizer.recognized = undefined as never;
+        recognizer.canceled = undefined as never;
+        recognizer.sessionStopped = undefined as never;
+        try {
+          recognizer.stopContinuousRecognitionAsync(
+            () => {
+              try { recognizer.close(); } catch { /* ok */ }
+              resolve();
+            },
+            () => {
+              try { recognizer.close(); } catch { /* ok */ }
+              resolve();
+            }
+          );
+        } catch {
+          resolve();
+        }
+      } else {
+        resolve();
+      }
+    });
   }, []);
 
   // ─── TTS speak function ────────────────────────────────
@@ -257,7 +275,9 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
   executeRef.current = async (transcript: string) => {
     if (processingRef.current) return;
     processingRef.current = true;
-    stopRecognizer();
+
+    // Stop recognizer and wait for it to fully shut down
+    await stopRecognizer();
 
     dispatch({ type: 'TRANSCRIPT_FINAL', transcript });
 
@@ -320,17 +340,45 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SPEAKING_COMPLETE' });
 
     if (intent.type !== 'stop_listening') {
+      // After processing, restart wake listener with a small delay
+      // so the old recognizer is fully cleaned up
       desiredModeRef.current = 'wake';
-      startRecognizerRef.current('wake');
+      setTimeout(() => {
+        if (desiredModeRef.current === 'wake' && !processingRef.current) {
+          startRecognizerRef.current('wake');
+        }
+      }, 300);
     } else {
       desiredModeRef.current = 'off';
       setPassiveListening(false);
     }
   };
 
+  // ─── Request microphone permission ─────────────────────
+  const requestMicPermission = useCallback(async (): Promise<boolean> => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop all tracks immediately — we just needed the permission grant
+      stream.getTracks().forEach(t => t.stop());
+      dispatch({ type: 'MIC_GRANTED' });
+      return true;
+    } catch (e) {
+      console.warn('[Voice] Microphone permission denied:', e);
+      return false;
+    }
+  }, []);
+
   // ─── Start Azure recognizer (wake OR command mode) ─────
   startRecognizerRef.current = async (mode: 'wake' | 'command') => {
-    stopRecognizer();
+    // Prevent concurrent start attempts
+    if (startingRef.current) return;
+    startingRef.current = true;
+
+    // Wait for any existing recognizer to fully stop
+    await stopRecognizer();
+
+    // Small delay to let Azure SDK release internal resources
+    await new Promise(r => setTimeout(r, 150));
 
     try {
       if (!azureSdkRef.current) {
@@ -340,9 +388,12 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
 
       const tokenData = await fetchSpeechToken();
       if (!tokenData) {
-        console.error('[Voice] Azure Speech not configured');
-        toast({ title: 'Voice not configured', description: 'Azure Speech credentials missing.', variant: 'destructive' });
-        dispatch({ type: 'ERROR', error: 'Azure Speech not configured' });
+        console.warn('[Voice] Azure Speech not configured');
+        if (mode === 'command') {
+          toast({ title: 'Voice not configured', description: 'Azure Speech credentials missing.', variant: 'destructive' });
+          dispatch({ type: 'ERROR', error: 'Azure Speech not configured' });
+        }
+        startingRef.current = false;
         return;
       }
 
@@ -360,6 +411,11 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
           const text = event.result.text;
           if (matchesWakeWord(text)) {
             const afterWake = stripWakeWord(text);
+            // Detach handlers immediately to prevent further events
+            recognizer.recognizing = undefined as never;
+            recognizer.recognized = undefined as never;
+            recognizer.canceled = undefined as never;
+            recognizer.sessionStopped = undefined as never;
             stopRecognizer();
             setPassiveListening(false);
             playActivationSound().then(() => {
@@ -380,6 +436,10 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
             const text = event.result.text;
             if (matchesWakeWord(text)) {
               const afterWake = stripWakeWord(text);
+              recognizer.recognizing = undefined as never;
+              recognizer.recognized = undefined as never;
+              recognizer.canceled = undefined as never;
+              recognizer.sessionStopped = undefined as never;
               stopRecognizer();
               setPassiveListening(false);
               playActivationSound().then(() => {
@@ -433,11 +493,14 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
 
         recognizer.startContinuousRecognitionAsync(
           () => {
+            startingRef.current = false;
             wakeRetryCountRef.current = 0;
             setPassiveListening(true);
+            dispatch({ type: 'MIC_GRANTED' });
             console.info('[Voice] Azure wake word listener started');
           },
           (err: string) => {
+            startingRef.current = false;
             wakeRetryCountRef.current += 1;
             setPassiveListening(false);
             if (wakeRetryCountRef.current >= MAX_WAKE_RETRIES) {
@@ -445,7 +508,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
               desiredModeRef.current = 'off';
               return;
             }
-            console.warn('[Voice] Wake listener start failed (attempt', wakeRetryCountRef.current + '):', err);
+            console.warn('[Voice] Wake listener start failed (attempt', wakeRetryCountRef.current, '):', err);
             if (desiredModeRef.current === 'wake') {
               const backoff = Math.min(3000 * Math.pow(2, wakeRetryCountRef.current - 1), 15000);
               setTimeout(() => {
@@ -465,6 +528,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
           latestInterim = event.result.text;
           dispatch({ type: 'TRANSCRIPT_UPDATE', transcript: event.result.text });
 
+          // Reset the silence timeout on every interim result
           if (commandTimeoutRef.current) clearTimeout(commandTimeoutRef.current);
           commandTimeoutRef.current = setTimeout(() => {
             if (latestInterim && !processingRef.current && modeRef.current === 'command') {
@@ -487,36 +551,62 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
         recognizer.canceled = (_sender: unknown, event: { reason: number; errorDetails?: string }) => {
           if (modeRef.current !== 'command') return;
           console.warn('[Voice] Command recognizer canceled:', event.errorDetails);
+          // Only execute if we actually had speech — don't execute empty string
           if (latestInterim && !processingRef.current) {
             executeRef.current(latestInterim);
           } else if (!processingRef.current) {
-            executeRef.current('');
+            // Recognizer was canceled without any speech — just go back to wake mode
+            dispatch({ type: 'SPEAKING_COMPLETE' });
+            processingRef.current = false;
+            desiredModeRef.current = 'wake';
+            setTimeout(() => {
+              if (desiredModeRef.current === 'wake' && !processingRef.current) {
+                startRecognizerRef.current('wake');
+              }
+            }, 300);
           }
         };
 
         recognizer.startContinuousRecognitionAsync(
           () => {
+            startingRef.current = false;
+            // Overall timeout: if no speech at all after 10s, return to wake
             commandTimeoutRef.current = setTimeout(() => {
               if (!processingRef.current && modeRef.current === 'command') {
                 if (latestInterim) {
                   executeRef.current(latestInterim);
                 } else {
-                  executeRef.current('');
+                  // No speech detected — quietly return to wake mode
+                  stopRecognizer();
+                  dispatch({ type: 'SPEAKING_COMPLETE' });
+                  desiredModeRef.current = 'wake';
+                  setTimeout(() => {
+                    if (desiredModeRef.current === 'wake' && !processingRef.current) {
+                      startRecognizerRef.current('wake');
+                    }
+                  }, 300);
                 }
               }
             }, 10000);
           },
           (err: string) => {
-            console.error('[Voice] Failed to start command listener:', err);
+            startingRef.current = false;
+            console.warn('[Voice] Failed to start command listener:', err);
             dispatch({ type: 'ERROR', error: 'Failed to start voice recognition' });
             processingRef.current = false;
+            // Go back to wake mode after failure
             desiredModeRef.current = 'wake';
-            startRecognizerRef.current('wake');
+            setTimeout(() => {
+              if (desiredModeRef.current === 'wake' && !processingRef.current) {
+                startRecognizerRef.current('wake');
+              }
+            }, 500);
           }
         );
       }
     } catch (e) {
-      console.error('[Voice] Azure Speech SDK error:', e);
+      startingRef.current = false;
+      console.warn('[Voice] Azure Speech SDK error:', e);
       dispatch({ type: 'ERROR', error: 'Voice recognition unavailable' });
     }
   };
@@ -529,7 +619,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
       try {
         azureSdkRef.current = await import('microsoft-cognitiveservices-speech-sdk');
       } catch {
-        console.error('[Voice] Failed to load Azure Speech SDK');
+        console.warn('[Voice] Failed to load Azure Speech SDK');
         return;
       }
 
@@ -539,12 +629,42 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
       if (token) {
         setSupported(true);
         console.info('[Voice] Azure Speech Services ready');
-        desiredModeRef.current = 'wake';
-        setTimeout(() => {
-          if (mounted && desiredModeRef.current === 'wake') {
-            startRecognizerRef.current('wake');
+
+        // Try to auto-start wake listener for hands-free experience
+        // Check if mic permission is already granted
+        try {
+          const permResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          if (permResult.state === 'granted') {
+            dispatch({ type: 'MIC_GRANTED' });
+            desiredModeRef.current = 'wake';
+            setTimeout(() => {
+              if (mounted && desiredModeRef.current === 'wake') {
+                startRecognizerRef.current('wake');
+              }
+            }, 500);
+          } else if (permResult.state === 'prompt') {
+            // Permission not yet decided — auto-request mic on page load
+            // for hands-free experience
+            const granted = await requestMicPermission();
+            if (granted && mounted) {
+              desiredModeRef.current = 'wake';
+              setTimeout(() => {
+                if (mounted && desiredModeRef.current === 'wake') {
+                  startRecognizerRef.current('wake');
+                }
+              }, 500);
+            }
           }
-        }, 800);
+          // If 'denied', orb shows but user must grant permission through browser settings
+        } catch {
+          // permissions API not available — try to start directly
+          desiredModeRef.current = 'wake';
+          setTimeout(() => {
+            if (mounted && desiredModeRef.current === 'wake') {
+              startRecognizerRef.current('wake');
+            }
+          }, 800);
+        }
       } else {
         console.warn('[Voice] Azure Speech not configured — voice assistant disabled');
         setSupported(false);
@@ -556,7 +676,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
       desiredModeRef.current = 'off';
       stopRecognizer();
     };
-  }, [stopRecognizer]);
+  }, [stopRecognizer, requestMicPermission]);
 
   // ─── Watchdog: recover from silent death ───────────────
   useEffect(() => {
@@ -567,6 +687,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
         modeRef.current === 'off' &&
         azureRecognizerRef.current === null &&
         !processingRef.current &&
+        !startingRef.current &&
         wakeRetryCountRef.current < MAX_WAKE_RETRIES
       ) {
         console.info('[Voice] Watchdog: restarting wake listener');
@@ -591,10 +712,11 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
   // ─── Recover on tab focus ──────────────────────────────
   useEffect(() => {
     const onFocus = () => {
-      if (desiredModeRef.current === 'wake' && !processingRef.current) {
+      if (desiredModeRef.current === 'wake' && !processingRef.current && !startingRef.current) {
         setTimeout(() => {
           if (azureRecognizerRef.current === null && desiredModeRef.current === 'wake' && !processingRef.current) {
             console.info('[Voice] Tab focus: restarting wake listener');
+            wakeRetryCountRef.current = 0; // Reset retries on tab focus
             startRecognizerRef.current('wake');
           }
         }, 500);
@@ -607,38 +729,67 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
   // ─── Toggle (click / keyboard) ──────────────────────────
   const toggleListening = useCallback(async () => {
     wakeRetryCountRef.current = 0; // Reset on manual interaction
+
     if (state.orbState === 'listening') {
-      stopRecognizer();
+      // Currently listening → cancel and return to wake
+      await stopRecognizer();
       dispatch({ type: 'CANCEL' });
       await playDeactivationSound();
       desiredModeRef.current = 'wake';
-      startRecognizerRef.current('wake');
+      setTimeout(() => {
+        if (desiredModeRef.current === 'wake' && !processingRef.current) {
+          startRecognizerRef.current('wake');
+        }
+      }, 300);
     } else if (state.orbState === 'idle') {
-      stopRecognizer();
+      // Idle → start command mode
+      // First, ensure mic permission is granted (user gesture = guaranteed to work)
+      if (!state.micGranted) {
+        const granted = await requestMicPermission();
+        if (!granted) {
+          toast({ title: 'Microphone required', description: 'Please allow microphone access for voice commands.', variant: 'destructive' });
+          return;
+        }
+      }
+
+      // Stop any existing wake listener and wait for full shutdown
+      await stopRecognizer();
       setPassiveListening(false);
       await playActivationSound();
       dispatch({ type: 'START_LISTENING' });
-      desiredModeRef.current = 'off';
-      startRecognizerRef.current('command');
+      desiredModeRef.current = 'off'; // Don't restart wake while in command mode
+      // Start command recognizer after a small delay
+      setTimeout(() => {
+        startRecognizerRef.current('command');
+      }, 100);
     } else if (state.orbState === 'speaking' || state.orbState === 'processing') {
-      stopRecognizer();
+      // Speaking/processing → cancel everything
+      await stopRecognizer();
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       dispatch({ type: 'CANCEL' });
       processingRef.current = false;
       await playDeactivationSound();
       desiredModeRef.current = 'wake';
-      startRecognizerRef.current('wake');
+      setTimeout(() => {
+        if (desiredModeRef.current === 'wake' && !processingRef.current) {
+          startRecognizerRef.current('wake');
+        }
+      }, 300);
     }
-  }, [state.orbState, stopRecognizer]);
+  }, [state.orbState, state.micGranted, stopRecognizer, requestMicPermission]);
 
   const cancelVoice = useCallback(async () => {
-    stopRecognizer();
+    await stopRecognizer();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     dispatch({ type: 'CANCEL' });
     processingRef.current = false;
     await playDeactivationSound();
     desiredModeRef.current = 'wake';
-    startRecognizerRef.current('wake');
+    setTimeout(() => {
+      if (desiredModeRef.current === 'wake' && !processingRef.current) {
+        startRecognizerRef.current('wake');
+      }
+    }, 300);
   }, [stopRecognizer]);
 
   // ─── Keyboard shortcut ────────────────────────────────
