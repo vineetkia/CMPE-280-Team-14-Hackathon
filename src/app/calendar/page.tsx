@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useEvents } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/useToast';
 import { eventTypeColors } from '@/lib/constants';
@@ -16,6 +16,18 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // Voice assistant: open add form when voice command triggers
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail?.action === 'add_event') {
+        setSelectedDate(new Date());
+        setIsFormOpen(true);
+      }
+    };
+    window.addEventListener('voice:action', handler);
+    return () => window.removeEventListener('voice:action', handler);
+  }, []);
 
   const days = useMemo(() => {
     const year = currentDate.getFullYear();

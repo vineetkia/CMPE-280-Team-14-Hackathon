@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { CheckCircle2 } from 'lucide-react';
 import { Todo } from '@/types';
@@ -36,6 +36,17 @@ export default function TodosPage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+
+  // Voice assistant: open add dialog when voice command triggers
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail?.action === 'add_todo') {
+        setIsAddDialogOpen(true);
+      }
+    };
+    window.addEventListener('voice:action', handler);
+    return () => window.removeEventListener('voice:action', handler);
+  }, []);
 
   const filteredTodos = useMemo(
     () => getFilteredTodos(searchQuery, filterPriority, filterCategory),

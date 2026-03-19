@@ -38,6 +38,17 @@ function ChatPageContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeConversation?.messages.length, streamingContent]);
 
+  // Voice assistant: create new chat when voice command triggers
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail?.action === 'new_chat') {
+        createConversation();
+      }
+    };
+    window.addEventListener('voice:action', handler);
+    return () => window.removeEventListener('voice:action', handler);
+  }, [createConversation]);
+
   // Handle ?q= URL parameter on mount
   useEffect(() => {
     if (initialQueryHandled.current) return;

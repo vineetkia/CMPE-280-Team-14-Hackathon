@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAssignments } from '@/hooks/useAssignments';
 import { useToast } from '@/hooks/useToast';
 import { Assignment } from '@/types';
@@ -23,6 +23,18 @@ export default function AssignmentsPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
+
+  // Voice assistant: open add form when voice command triggers
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail?.action === 'add_assignment') {
+        setEditingAssignment(null);
+        setIsFormOpen(true);
+      }
+    };
+    window.addEventListener('voice:action', handler);
+    return () => window.removeEventListener('voice:action', handler);
+  }, []);
 
   const filteredAssignments = useMemo(
     () => getFilteredAndSorted(searchQuery, filterStatus, filterPriority, sortField, sortDirection),
