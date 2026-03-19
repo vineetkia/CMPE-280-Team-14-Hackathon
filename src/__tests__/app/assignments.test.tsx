@@ -32,6 +32,7 @@ vi.mock('@/hooks/useAssignments', () => ({
     updateAssignment: vi.fn(),
     deleteAssignment: vi.fn(),
     getFilteredAndSorted: vi.fn(() => mockAssignments),
+    uniqueGrades: ['A', 'B+'],
     setAssignments: vi.fn(),
   }),
 }));
