@@ -13,12 +13,13 @@ import { AssignmentForm } from '@/components/assignments/AssignmentForm';
 type SortField = 'title' | 'dueDate' | 'priority' | 'status';
 
 export default function AssignmentsPage() {
-  const { stats, getFilteredAndSorted, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
+  const { stats, uniqueGrades, getFilteredAndSorted, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
   const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
+  const [filterGrade, setFilterGrade] = useState('all');
   const [sortField, setSortField] = useState<SortField>('dueDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -37,8 +38,8 @@ export default function AssignmentsPage() {
   }, []);
 
   const filteredAssignments = useMemo(
-    () => getFilteredAndSorted(searchQuery, filterStatus, filterPriority, sortField, sortDirection),
-    [getFilteredAndSorted, searchQuery, filterStatus, filterPriority, sortField, sortDirection]
+    () => getFilteredAndSorted(searchQuery, filterStatus, filterPriority, sortField, sortDirection, filterGrade),
+    [getFilteredAndSorted, searchQuery, filterStatus, filterPriority, sortField, sortDirection, filterGrade]
   );
 
   const toggleSort = (field: SortField) => {
@@ -101,6 +102,9 @@ export default function AssignmentsPage() {
         onStatusChange={setFilterStatus}
         filterPriority={filterPriority}
         onPriorityChange={setFilterPriority}
+        filterGrade={filterGrade}
+        onGradeChange={setFilterGrade}
+        availableGrades={uniqueGrades}
         onAddClick={() => setIsFormOpen(true)}
       />
 
