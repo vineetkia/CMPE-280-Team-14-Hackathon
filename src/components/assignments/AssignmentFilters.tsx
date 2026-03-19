@@ -14,6 +14,9 @@ interface AssignmentFiltersProps {
   onStatusChange: (value: string) => void;
   filterPriority: string;
   onPriorityChange: (value: string) => void;
+  filterGrade: string;
+  onGradeChange: (value: string) => void;
+  availableGrades: string[];
   onAddClick: () => void;
 }
 
@@ -24,6 +27,9 @@ export function AssignmentFilters({
   onStatusChange,
   filterPriority,
   onPriorityChange,
+  filterGrade,
+  onGradeChange,
+  availableGrades,
   onAddClick,
 }: AssignmentFiltersProps) {
   return (
@@ -34,7 +40,7 @@ export function AssignmentFilters({
       className={glassCard + ' p-6'}
     >
       <div className="flex flex-col lg:flex-row gap-4 items-end">
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
             <Input
@@ -64,6 +70,20 @@ export function AssignmentFilters({
               <SelectItem value="high">High</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterGrade} onValueChange={onGradeChange}>
+            <SelectTrigger className="bg-white/50 dark:bg-gray-800/50">
+              <SelectValue placeholder="Filter by grade" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Grades</SelectItem>
+              <SelectItem value="ungraded">Ungraded</SelectItem>
+              {availableGrades.map((grade) => (
+                <SelectItem key={grade} value={grade}>
+                  {grade}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
