@@ -9,6 +9,9 @@ const defaultProps = {
   onStatusChange: vi.fn(),
   filterPriority: 'all',
   onPriorityChange: vi.fn(),
+  filterGrade: 'all',
+  onGradeChange: vi.fn(),
+  availableGrades: ['A', 'B+', 'C'],
   onAddClick: vi.fn(),
 };
 
