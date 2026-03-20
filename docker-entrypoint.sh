@@ -2,7 +2,7 @@
 set -e
 
 echo "Running database migrations..."
-prisma migrate deploy 2>/dev/null || prisma db push --accept-data-loss
+npx prisma migrate deploy 2>/dev/null || npx prisma db push --accept-data-loss
 
 echo "Starting StudyPilot..."
 exec node server.js
