@@ -7,6 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── User ─────────────────────────────────────────────────
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  todos         Todo[]
+  assignments   Assignment[]
+  events        CalendarEvent[]
+  conversations Conversation[]
+}
+
 // ─── Todo ────────────────────────────────────────────────
 model Todo {
   id          String    @id @default(uuid())
@@ -18,6 +33,11 @@ model Todo {
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  @@index([userId])
 }
 
 // ─── Assignment ──────────────────────────────────────────
@@ -32,6 +52,11 @@ model Assignment {
   grade       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  @@index([userId])
 }
 
 // ─── Calendar Event ──────────────────────────────────────
@@ -46,7 +71,11 @@ model CalendarEvent {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
   @@map("calendar_events")
+  @@index([userId])
 }
 
 // ─── Conversation & Messages ─────────────────────────────
@@ -56,6 +85,11 @@ model Conversation {
   messages  Message[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@index([userId])
 }
 
 model Message {
