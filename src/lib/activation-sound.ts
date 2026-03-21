@@ -1,29 +1,41 @@
 /**
  * Siri-like activation chime using Web Audio API.
  * Two quick ascending tones — no external audio files needed.
+ *
+ * AudioContext is lazily created only on first user gesture
+ * to avoid Chrome's "AudioContext was not allowed to start" warning.
  */
 
 let audioContext: AudioContext | null = null;
 
-function getAudioContext(): AudioContext {
-  if (!audioContext) {
-    audioContext = new AudioContext();
+function getOrCreateAudioContext(): AudioContext | null {
+  try {
+    if (!audioContext) {
+      audioContext = new AudioContext();
+    }
+    // Resume if suspended (browsers require user interaction first)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
+    return audioContext;
+  } catch {
+    return null;
   }
-  return audioContext;
 }
 
 /**
  * Play a Siri-style activation chime: two quick ascending tones.
  * Returns a Promise that resolves when the sound finishes.
+ * Silently resolves if AudioContext is not available.
  */
 export function playActivationSound(): Promise<void> {
   return new Promise((resolve) => {
     try {
-      const ctx = getAudioContext();
-
-      // Resume context if suspended (browsers require user interaction first)
-      if (ctx.state === 'suspended') {
-        ctx.resume();
+      const ctx = getOrCreateAudioContext();
+      if (!ctx || ctx.state === 'suspended') {
+        // Can't play audio yet — resolve silently
+        resolve();
+        return;
       }
 
       const now = ctx.currentTime;
@@ -69,10 +81,10 @@ export function playActivationSound(): Promise<void> {
 export function playDeactivationSound(): Promise<void> {
   return new Promise((resolve) => {
     try {
-      const ctx = getAudioContext();
-
-      if (ctx.state === 'suspended') {
-        ctx.resume();
+      const ctx = getOrCreateAudioContext();
+      if (!ctx || ctx.state === 'suspended') {
+        resolve();
+        return;
       }
 
       const now = ctx.currentTime;
@@ -108,4 +120,12 @@ export function playDeactivationSound(): Promise<void> {
       resolve();
     }
   });
+}
+
+/**
+ * Pre-warm the AudioContext on user interaction.
+ * Call this from any click/touch handler to ensure audio works later.
+ */
+export function warmUpAudio(): void {
+  getOrCreateAudioContext();
 }
