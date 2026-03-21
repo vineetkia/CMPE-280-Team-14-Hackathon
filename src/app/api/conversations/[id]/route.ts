@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 // GET /api/conversations/:id
 export async function GET(
@@ -7,9 +8,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
-    const conversation = await prisma.conversation.findUnique({
-      where: { id },
+    const conversation = await prisma.conversation.findFirst({
+      where: { id, userId: user.userId },
       include: { messages: { orderBy: { timestamp: 'asc' } } },
     });
     if (!conversation) {
@@ -17,6 +19,9 @@ export async function GET(
     }
     return NextResponse.json(conversation);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[API] GET /api/conversations/:id error:', error);
     return NextResponse.json({ error: 'Failed to fetch conversation' }, { status: 500 });
   }
@@ -28,8 +33,15 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
     const body = await request.json();
+
+    // Verify ownership
+    const existing = await prisma.conversation.findFirst({ where: { id, userId: user.userId } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
 
     const conversation = await prisma.conversation.update({
       where: { id },
@@ -40,6 +52,9 @@ export async function PATCH(
     });
     return NextResponse.json(conversation);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[API] PATCH /api/conversations/:id error:', error);
     return NextResponse.json({ error: 'Failed to update conversation' }, { status: 500 });
   }
@@ -51,10 +66,21 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
+
+    // Verify ownership
+    const existing = await prisma.conversation.findFirst({ where: { id, userId: user.userId } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+
     await prisma.conversation.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[API] DELETE /api/conversations/:id error:', error);
     return NextResponse.json({ error: 'Failed to delete conversation' }, { status: 500 });
   }
