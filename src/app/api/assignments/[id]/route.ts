@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 // PATCH /api/assignments/:id
 export async function PATCH(
@@ -7,8 +8,15 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
     const body = await request.json();
+
+    // Verify ownership
+    const existing = await prisma.assignment.findFirst({ where: { id, userId: user.userId } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
+    }
 
     const assignment = await prisma.assignment.update({
       where: { id },
@@ -24,6 +32,9 @@ export async function PATCH(
     });
     return NextResponse.json(assignment);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[API] PATCH /api/assignments/:id error:', error);
     return NextResponse.json({ error: 'Failed to update assignment' }, { status: 500 });
   }
@@ -35,10 +46,21 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
+
+    // Verify ownership
+    const existing = await prisma.assignment.findFirst({ where: { id, userId: user.userId } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
+    }
+
     await prisma.assignment.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[API] DELETE /api/assignments/:id error:', error);
     return NextResponse.json({ error: 'Failed to delete assignment' }, { status: 500 });
   }
