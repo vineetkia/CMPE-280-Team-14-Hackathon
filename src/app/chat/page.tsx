@@ -19,6 +19,7 @@ function ChatPageContent() {
     activeConversationId,
     setActiveConversationId,
     isLoading,
+    loading,
     streamingContent,
     createConversation,
     deleteConversation,
@@ -53,18 +54,12 @@ function ChatPageContent() {
   useEffect(() => {
     if (initialQueryHandled.current) return;
     const q = searchParams.get('q');
-    if (q) {
+    if (q && !loading) {
       initialQueryHandled.current = true;
-      // Create a new conversation and send the message
-      createConversation();
-      // Use setTimeout to allow state to settle before sending
-      setTimeout(() => {
-        sendMessage(q);
-      }, 0);
-      // Clear the URL param without full page reload
+      sendMessage(q);
       router.replace('/chat');
     }
-  }, [searchParams, createConversation, sendMessage, router]);
+  }, [searchParams, sendMessage, router, loading]);
 
   const handleSend = (messageText?: string) => {
     const text = messageText || input.trim();
