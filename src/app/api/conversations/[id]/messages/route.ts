@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 
 // POST /api/conversations/:id/messages — add a message to a conversation
 export async function POST(
@@ -7,6 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
     const body = await request.json();
     const { role, content } = body;
@@ -15,8 +17,10 @@ export async function POST(
       return NextResponse.json({ error: 'Role and content are required' }, { status: 400 });
     }
 
-    // Verify conversation exists
-    const conversation = await prisma.conversation.findUnique({ where: { id } });
+    // Verify conversation belongs to current user
+    const conversation = await prisma.conversation.findFirst({
+      where: { id, userId: user.userId },
+    });
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
     }
@@ -45,6 +49,9 @@ export async function POST(
 
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[API] POST /api/conversations/:id/messages error:', error);
     return NextResponse.json({ error: 'Failed to add message' }, { status: 500 });
   }
