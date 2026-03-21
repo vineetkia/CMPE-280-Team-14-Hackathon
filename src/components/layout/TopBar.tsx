@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, Moon, Sun, User, Menu, LogOut, ChevronDown } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
@@ -11,6 +12,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ onMenuToggle }: TopBarProps) {
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const [dateString, setDateString] = useState('');
@@ -133,7 +135,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
                   </div>
                   <div className="p-1">
                     <button
-                      onClick={() => { setProfileOpen(false); }}
+                      onClick={() => { setProfileOpen(false); router.push('/profile'); }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
                     >
                       <User className="w-4 h-4" />
