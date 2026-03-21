@@ -13,7 +13,7 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { parseVoiceIntent, getIntentFeedback } from '@/lib/voice-intents';
-import { playActivationSound, playDeactivationSound } from '@/lib/activation-sound';
+import { playActivationSound, playDeactivationSound, warmUpAudio } from '@/lib/activation-sound';
 import { toast } from '@/hooks/useToast';
 import type { VoiceOrbState } from '@/types';
 
@@ -374,6 +374,11 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
     if (startingRef.current) return;
     startingRef.current = true;
 
+    // Safety: always release startingRef after 10s to prevent permanent lock
+    const safetyTimeout = setTimeout(() => {
+      startingRef.current = false;
+    }, 10000);
+
     // Wait for any existing recognizer to fully stop
     await stopRecognizer();
 
@@ -393,6 +398,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
           toast({ title: 'Voice not configured', description: 'Azure Speech credentials missing.', variant: 'destructive' });
           dispatch({ type: 'ERROR', error: 'Azure Speech not configured' });
         }
+        clearTimeout(safetyTimeout);
         startingRef.current = false;
         return;
       }
@@ -493,6 +499,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
 
         recognizer.startContinuousRecognitionAsync(
           () => {
+            clearTimeout(safetyTimeout);
             startingRef.current = false;
             wakeRetryCountRef.current = 0;
             setPassiveListening(true);
@@ -500,7 +507,9 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
             console.info('[Voice] Azure wake word listener started');
           },
           (err: string) => {
+            clearTimeout(safetyTimeout);
             startingRef.current = false;
+            azureRecognizerRef.current = null;
             wakeRetryCountRef.current += 1;
             setPassiveListening(false);
             if (wakeRetryCountRef.current >= MAX_WAKE_RETRIES) {
@@ -569,6 +578,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
 
         recognizer.startContinuousRecognitionAsync(
           () => {
+            clearTimeout(safetyTimeout);
             startingRef.current = false;
             // Overall timeout: if no speech at all after 10s, return to wake
             commandTimeoutRef.current = setTimeout(() => {
@@ -590,7 +600,9 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
             }, 10000);
           },
           (err: string) => {
+            clearTimeout(safetyTimeout);
             startingRef.current = false;
+            azureRecognizerRef.current = null;
             console.warn('[Voice] Failed to start command listener:', err);
             dispatch({ type: 'ERROR', error: 'Failed to start voice recognition' });
             processingRef.current = false;
@@ -605,6 +617,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
         );
       }
     } catch (e) {
+      clearTimeout(safetyTimeout);
       startingRef.current = false;
       console.warn('[Voice] Azure Speech SDK error:', e);
       dispatch({ type: 'ERROR', error: 'Voice recognition unavailable' });
@@ -729,6 +742,7 @@ export function VoiceAssistantProvider({ children }: { children: ReactNode }) {
   // ─── Toggle (click / keyboard) ──────────────────────────
   const toggleListening = useCallback(async () => {
     wakeRetryCountRef.current = 0; // Reset on manual interaction
+    warmUpAudio(); // Pre-warm AudioContext on user gesture
 
     if (state.orbState === 'listening') {
       // Currently listening → cancel and return to wake
