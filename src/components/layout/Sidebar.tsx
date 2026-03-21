@@ -10,7 +10,8 @@ import {
   MessageSquare,
   GraduationCap,
   X,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -22,6 +23,7 @@ const navItems = [
   { path: '/calendar', icon: Calendar, label: 'Calendar' },
   { path: '/assignments', icon: FileText, label: 'Assignments' },
   { path: '/chat', icon: MessageSquare, label: 'AI Chat' },
+  { path: '/profile', icon: Settings, label: 'Settings' },
 ];
 
 interface SidebarProps {
