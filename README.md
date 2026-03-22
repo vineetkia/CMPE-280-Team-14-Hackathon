@@ -1,8 +1,49 @@
-# StudyPilot - AI-Powered Study Dashboard
+<h1 align="center">StudyPilot</h1>
+<h3 align="center">AI-Powered Study Dashboard</h3>
 
-**Your AI-powered academic companion for smarter studying.**
+<p align="center">
+  <em>Your AI-powered academic companion for smarter studying.</em>
+</p>
 
-CMPE 280 - Web UI Design and Development | Spring 2026 | San Jose State University
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Azure_OpenAI-GPT--5.2-0078D4?logo=microsoftazure&logoColor=white" alt="Azure OpenAI" />
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Tests-315_passing-brightgreen?logo=vitest" alt="Tests" />
+  <img src="https://img.shields.io/badge/Coverage-87%25-brightgreen" alt="Coverage" />
+</p>
+
+<p align="center">
+  <strong>CMPE 280 — Web UI Design and Development | Spring 2026 | San Jose State University</strong>
+</p>
+
+---
+
+## Table of Contents
+
+- [Team Members](#team-members)
+- [Problem Statement](#problem-statement)
+- [Demo Walkthrough](#demo-walkthrough-for-presentation)
+- [Technical Summary](#technical-summary)
+- [Individual Contributions](#individual-contributions)
+- [What We Built](#what-we-built)
+- [Tech Stack](#tech-stack)
+- [Design System and Patterns](#design-system-and-patterns)
+- [Animation System](#animation-system-framer-motion)
+- [Component Architecture](#component-architecture)
+- [Backend Architecture](#backend-architecture)
+- [Voice Assistant](#voice-assistant)
+- [AI Integration](#ai-integration)
+- [Testing](#testing)
+- [Demo Credentials](#demo-credentials)
+- [How to Run](#how-to-run)
+- [Environment Variables](#environment-variables)
+- [Project Structure](#project-structure)
+- [Libraries and Dependencies](#libraries-and-dependencies)
+- [Presentation Guide](#presentation-guide----design-decisions-and-technical-implementation)
+- [Hackathon Rubric Alignment](#hackathon-rubric-alignment)
 
 ---
 
@@ -48,6 +89,12 @@ Here is a suggested flow for demonstrating StudyPilot in class:
 
 Built with Next.js 16, backed by a PostgreSQL database running in Docker, and powered by Azure OpenAI GPT-5.2, the app features JWT authentication with user-scoped data isolation, real-time AI streaming, a voice-first interface using Azure Speech Services, a glassmorphism design system with dark/light themes, and a fully responsive interface that works seamlessly on desktop and mobile. Deployed on an Azure Ubuntu VM with Docker Compose.
 
+### Architecture Diagram
+
+<p align="center">
+  <img src="diagram/architecture-diagram.png" alt="StudyPilot Architecture Diagram" width="800" />
+</p>
+
 ### Key Highlights
 
 - **4 AI-powered features** — Chat, Study Plan Generator, Assignment AI Tutor, Todo Suggestions — all using GPT-5.2 with real-time streaming
@@ -60,7 +107,7 @@ Built with Next.js 16, backed by a PostgreSQL database running in Docker, and po
 
 ### Accessibility for Persons with Disabilities
 
-StudyPilot is designed with inclusivity at its core. **Students with visual impairments, motor disabilities, or learning differences can operate the entire application using voice commands alone.** The Siri-style voice assistant -- powered by Azure Neural Speech-to-Text and Text-to-Speech -- allows users to:
+StudyPilot is designed with inclusivity at its core. **Students with visual impairments, motor disabilities, or learning differences can operate the entire application using voice commands alone.** The voice assistant -- powered by Azure Neural Speech-to-Text and Text-to-Speech -- allows users to:
 
 - **Create, complete, and manage todos** by speaking naturally (e.g., "Add a todo to study for the math exam")
 - **Navigate between pages** using voice commands (e.g., "Go to assignments", "Open calendar")
@@ -74,7 +121,7 @@ Beyond voice, the app supports `prefers-reduced-motion` for users with vestibula
 ## Individual Contributions
 
 ### Vineet Kumar
-Led AI integration, backend architecture, voice assistant, and the Chat module. Built the full PostgreSQL backend with Docker Compose, Prisma ORM v6 schema with 5 models, 14 RESTful API routes for CRUD operations, and migrated all frontend hooks from localStorage to real API persistence. Implemented the Siri-style voice assistant using Azure Speech SDK for STT/TTS with wake word detection ("Hey StudyPilot"), natural language command processing, and a CSS smoke/aurora animated orb with organic blob drifting and state-driven color palettes. Built the AI Chat page with streaming text display, conversation management, and chat history persisted to PostgreSQL. Implemented the Azure OpenAI client library with SSE streaming via async generators, server-side API proxy routes, and graceful fallback to mock responses. Also set up the project foundation -- Next.js 16 with App Router, TypeScript config, Tailwind CSS v4, Docker containerization, and all build tooling.
+Led AI integration, backend architecture, voice assistant, and the Chat module. Built the full PostgreSQL backend with Docker Compose, Prisma ORM v6 schema with 5 models, 14 RESTful API routes for CRUD operations, and migrated all frontend hooks from localStorage to real API persistence. Implemented the voice assistant using Azure Speech SDK for STT/TTS with wake word detection ("Hey StudyPilot"), natural language command processing, sidebar-integrated controls with animated indicators (passive/active/processing/speaking states), and floating glassmorphism transcript badges. Built the AI Chat page with streaming text display, conversation management, and chat history persisted to PostgreSQL. Implemented the Azure OpenAI client library with SSE streaming via async generators, server-side API proxy routes, and graceful fallback to mock responses. Also set up the project foundation -- Next.js 16 with App Router, TypeScript config, Tailwind CSS v4, Docker containerization, and all build tooling.
 
 ### Vritika Malhotra
 Owned the Dashboard experience and the shared UI component library. Built the Dashboard page with four animated stat cards (animated number counters, staggered entrances, progress bars), RecentTasks summary, UpcomingAssignments preview, AskAI quick-query widget, and the StudyPlanGenerator that analyzes user data to create personalized study schedules. Implemented 14 reusable UI primitives using Radix UI (Dialog, Select, Checkbox, Progress, ScrollArea, AlertDialog, Toast, Label, Badge, Button, Input, Textarea, Skeleton) with the CVA variant system. Created the layout system -- Sidebar with animated `layoutId` navigation indicator, TopBar with animated theme toggle, and ClientLayout with ErrorBoundary and page transitions.
@@ -140,13 +187,13 @@ The entire UI is built on a glassmorphism design system. Every card, panel, and 
 ```ts
 // src/lib/constants.ts
 export const glassCard =
-  "backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-xl";
+  "backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-lg glass-panel";
 
 export const glassCardHover =
-  "backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-xl hover:shadow-2xl transition-all";
+  "backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-lg glass-panel hover:shadow-xl hover:border-[var(--border)] transition-all";
 
 export const gradientButton =
-  "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-lg hover:shadow-[#667eea]/30 transition-all";
+  "bg-[var(--primary-solid)] hover:opacity-90 transition-opacity";
 ```
 
 The `--glass` and `--glass-border` values are CSS custom properties that swap between light and dark mode, so the entire theme system is driven by a small set of variables rather than duplicated Tailwind classes. Components just import `glassCard` and get the correct look in both themes automatically.
@@ -162,15 +209,15 @@ We centralized all shared styling constants to keep the codebase consistent acro
 ```ts
 // Priority, status, category, and event type all have dedicated color maps
 export const priorityColors = {
-  high: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30',
-  medium: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
-  low: 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30',
+  high: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+  medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  low: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
 };
 
 export const statusColors = {
-  'not-started': 'bg-gray-500/20 text-gray-600 dark:text-gray-400',
-  'in-progress': 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
-  'completed': 'bg-green-500/20 text-green-600 dark:text-green-400',
+  'not-started': 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400',
+  'in-progress': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  'completed': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
 };
 
 export const eventTypeColors = {
@@ -331,9 +378,7 @@ All data hooks communicate with the PostgreSQL backend through Next.js API route
 
 StudyPilot uses a full-stack architecture with a PostgreSQL database, Prisma ORM, and RESTful API routes -- all containerized with Docker.
 
-### Architecture Diagram
-
-![StudyPilot Architecture](diagram/architecture-diagram.png)
+The architecture diagram is shown in the [Technical Summary](#technical-summary) section above.
 
 The application runs on an **Azure Ubuntu VM** with Docker Engine hosting two containers inside an Azure Virtual Network:
 
@@ -517,6 +562,19 @@ Analyzes your current workload -- todos, assignments, and events -- and suggests
   - ErrorBoundary (crash recovery, retry functionality)
 
 We mocked Framer Motion globally in tests to avoid animation-related timing issues, which let us focus test assertions on behavior and rendered output rather than intermediate animation states.
+
+---
+
+## Demo Credentials
+
+After seeding the database, you can log in with the pre-loaded demo account:
+
+| Field | Value |
+|-------|-------|
+| Email | `demo@sjsu.edu` |
+| Password | `password123` |
+
+This account comes with 20 todos, 15 assignments, 25 calendar events, and 5 AI chat conversations pre-loaded for demonstration purposes.
 
 ---
 
@@ -821,7 +879,7 @@ We deliberately avoided the "flat white dashboard" look that dominates most prod
 Clear, relatable problem that every student on the team has experienced firsthand. Realistic scope for a four-person team working within a semester. Well-defined target user (college students managing coursework across multiple classes). Five distinct modules that each solve a specific pain point without trying to boil the ocean.
 
 ### Technical Execution (6 pts)
-Next.js 16 with App Router and TypeScript throughout the entire codebase. Full PostgreSQL backend with Prisma ORM, 19 RESTful API routes, JWT authentication with httpOnly cookies, and Docker containerization deployed on Azure VM. Azure Speech SDK voice assistant with Siri-style smoke/aurora animated orb. 315 tests with 87%+ coverage across 52 test files. Clean component decomposition with 40+ components and custom hooks. Real AI integration with SSE streaming (not just a fetch-and-display wrapper). Server-side API proxy for secure credential handling. Centralized animation library and design token system.
+Next.js 16 with App Router and TypeScript throughout the entire codebase. Full PostgreSQL backend with Prisma ORM, 19 RESTful API routes, JWT authentication with httpOnly cookies, and Docker containerization deployed on Azure VM. Azure Speech SDK voice assistant integrated into the sidebar with animated visual indicators and floating transcript badges. 315 tests with 87%+ coverage across 52 test files. Clean component decomposition with 50+ components and custom hooks. Real AI integration with SSE streaming (not just a fetch-and-display wrapper). Server-side API proxy for secure credential handling. Centralized animation library and design token system. Fully responsive across mobile, tablet, and desktop viewports.
 
 ### Engineering Decision-Making (4 pts)
 - **JWT authentication with httpOnly cookies** -- secure, stateless auth with bcrypt password hashing. httpOnly cookies prevent XSS token theft. All API routes verify ownership before allowing data access, ensuring complete multi-tenant isolation
@@ -846,21 +904,10 @@ Next.js 16 with App Router and TypeScript throughout the entire codebase. Full P
 - Error boundaries prevent full-page crashes with retry UI
 - Semantic HTML with proper heading hierarchy
 - Color contrast tested for both light and dark themes
-- Siri-style smoke/aurora animated voice orb with visual state feedback (idle/listening/processing/speaking)
+- Sidebar-integrated voice assistant with animated indicators (green passive dot, pulsing active dot, sound bars) and floating glassmorphism transcript badges
 
 ### Team Collaboration (3 pts)
 Component-based architecture enabled parallel development -- team members could work on different modules without merge conflicts. Shared design tokens and the centralized animation library kept the visual language consistent across independently-built features. Centralized hooks meant data layer changes did not ripple into UI code across the codebase.
-
----
-
-## Future Improvements
-
-- Google Calendar API integration for importing existing schedules
-- Study analytics and time tracking -- how long you actually spend vs. what you planned
-- Collaborative study groups with shared task boards
-- Push notifications for upcoming deadlines
-- PWA support for offline access and home screen install
-- OAuth integration (Google, GitHub) for single sign-on
 
 ---
 
