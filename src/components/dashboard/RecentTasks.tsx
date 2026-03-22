@@ -21,7 +21,7 @@ export function RecentTasks({ todos }: RecentTasksProps) {
   return (
     <motion.div
       variants={item}
-      className="lg:col-span-2 backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-xl glass-shine"
+      className="lg:col-span-2 backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-4 md:p-6 shadow-lg glass-panel glass-shine"
     >
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-[var(--foreground)]">Recent Tasks</h2>

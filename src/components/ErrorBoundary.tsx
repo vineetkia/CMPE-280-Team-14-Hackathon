@@ -47,7 +47,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           </p>
           <Button
             onClick={() => this.setState({ hasError: false, error: undefined })}
-            className="bg-gradient-to-r from-[#667eea] to-[#764ba2]"
+            className="bg-[var(--primary-solid)]"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Try Again

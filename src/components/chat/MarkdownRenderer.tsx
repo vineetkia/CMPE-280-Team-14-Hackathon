@@ -63,7 +63,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
     },
     pre: ({ children }) => <>{children}</>,
     blockquote: ({ children }) => (
-      <blockquote className="border-l-3 border-[#667eea] pl-3 my-2 italic text-[var(--muted-foreground)]">
+      <blockquote className="border-l-3 border-[var(--primary-solid)] pl-3 my-2 italic text-[var(--muted-foreground)]">
         {children}
       </blockquote>
     ),
@@ -86,7 +86,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#667eea] dark:text-[#818cf8] underline underline-offset-2 hover:opacity-80"
+        className="text-[var(--primary-solid)] dark:text-blue-400 underline underline-offset-2 hover:opacity-80"
       >
         {children}
       </a>

@@ -26,12 +26,12 @@ const container = {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="space-y-4 md:space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-xl"
+            className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-lg glass-panel"
           >
             <div className="flex items-center justify-between mb-4">
               <Skeleton className="w-12 h-12 rounded-xl" />
@@ -44,20 +44,20 @@ function DashboardSkeleton() {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-xl">
+        <div className="lg:col-span-2 backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-lg glass-panel">
           <Skeleton className="w-32 h-6 mb-6" />
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="w-full h-16 mb-3 rounded-xl" />
           ))}
         </div>
-        <div className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-xl">
+        <div className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-lg glass-panel">
           <Skeleton className="w-24 h-6 mb-6" />
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="w-full h-24 mb-3 rounded-xl" />
           ))}
         </div>
       </div>
-      <div className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-8 shadow-xl">
+      <div className="backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-8 shadow-lg glass-panel">
         <Skeleton className="w-48 h-6 mb-6" />
         <Skeleton className="w-full h-10" />
       </div>
@@ -135,8 +135,8 @@ export default function DashboardPage() {
   );
 
   return (
-    <motion.div variants={container} initial="hidden" animate="visible" className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <motion.div variants={container} initial="hidden" animate="visible" className="space-y-4 md:space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {stats.map((stat, index) => (
           <StatCard key={stat.label} stat={stat} index={index} />
         ))}

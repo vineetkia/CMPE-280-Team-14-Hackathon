@@ -151,7 +151,7 @@ export default function TodosPage() {
             ))}
           </div>
         ) : (
-          <div className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-xl">
+          <div className="backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-lg glass-panel">
             <EmptyState
               icon={CheckCircle2}
               title="No todos found"

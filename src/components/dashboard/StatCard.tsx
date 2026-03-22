@@ -56,7 +56,7 @@ export function StatCard({ stat, index }: StatCardProps) {
       variants={staggerItem}
       whileHover={{ y: -4, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
       whileTap={{ scale: 0.98 }}
-      className={`${glassCard} p-6 glass-shine cursor-default`}
+      className={`${glassCard} p-4 md:p-6 glass-shine cursor-default`}
     >
       <div
         className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 hover:opacity-5 transition-opacity duration-300`}

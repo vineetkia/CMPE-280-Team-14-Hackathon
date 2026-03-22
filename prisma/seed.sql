@@ -16,7 +16,7 @@ DELETE FROM "User";
 -- ─── Demo User ──────────────────────────────────────────────
 -- Password hash for "password123" using bcrypt with 12 rounds
 INSERT INTO "User" (id, name, email, "passwordHash", "createdAt", "updatedAt") VALUES
-  ('demo-user-001', 'Vineet Kia', 'demo@sjsu.edu', '$2b$12$.ZzSw5W9uei73Ahl9cx4VeCohsG78w5DdbkXE3.zr7z8BwtzjVr2y', NOW(), NOW());
+  ('demo-user-001', 'Vineet Kumar', 'demo@sjsu.edu', '$2b$12$.ZzSw5W9uei73Ahl9cx4VeCohsG78w5DdbkXE3.zr7z8BwtzjVr2y', NOW(), NOW());
 
 -- ─── Todos (20 items) ────────────────────────────────────
 INSERT INTO "Todo" (id, title, description, completed, priority, category, "dueDate", "createdAt", "updatedAt", "userId") VALUES

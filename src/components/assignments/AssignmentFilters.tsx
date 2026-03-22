@@ -37,7 +37,7 @@ export function AssignmentFilters({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className={glassCard + ' p-6'}
+      className={glassCard + ' p-4 md:p-6'}
     >
       <div className="flex flex-col lg:flex-row gap-4 items-end">
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

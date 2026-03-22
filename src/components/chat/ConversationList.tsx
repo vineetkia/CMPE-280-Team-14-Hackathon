@@ -62,7 +62,7 @@ export function ConversationList({
       <div className="p-4 border-b border-[var(--border)]">
         <Button
           onClick={onCreate}
-          className="w-full bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-lg hover:shadow-[#667eea]/30"
+          className="w-full bg-[var(--primary-solid)] hover:shadow-lg hover:"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Chat
@@ -89,7 +89,7 @@ export function ConversationList({
                 className={`
                   p-3 rounded-xl cursor-pointer transition-all group relative
                   ${activeConversationId === conversation.id
-                    ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                    ? 'bg-[var(--primary-solid)] text-white'
                     : 'hover:bg-[var(--secondary)] text-[var(--foreground)]'}
                 `}
               >
@@ -188,7 +188,7 @@ export function ConversationList({
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="w-72 hidden md:flex backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-xl flex-col overflow-hidden"
+        className="w-72 hidden md:flex backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-lg glass-panel flex-col overflow-hidden"
       >
         {listContent}
       </motion.div>
@@ -209,7 +209,7 @@ export function ConversationList({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed top-0 left-0 bottom-0 w-80 z-50 backdrop-blur-xl bg-[var(--glass)] border-r border-[var(--glass-border)] shadow-xl flex flex-col md:hidden"
+              className="fixed top-0 left-0 bottom-0 w-[calc(100vw-3rem)] max-w-80 z-50 backdrop-blur-2xl bg-[var(--glass)] border-r border-[var(--glass-border)] shadow-xl glass-panel flex flex-col md:hidden"
             >
               <div className="flex justify-end p-3">
                 <button

@@ -202,7 +202,7 @@ export function TodoAISuggestions({ todos, assignments, events, onAddTodo }: Tod
               </div>
             </ScrollArea>
             <div className="flex gap-2 pt-2">
-              <Button onClick={addAll} size="sm" className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
+              <Button onClick={addAll} size="sm" className="bg-[var(--primary-solid)] text-white">
                 <Plus className="w-4 h-4 mr-1" />
                 Add All ({suggestions.length - addedIds.size})
               </Button>

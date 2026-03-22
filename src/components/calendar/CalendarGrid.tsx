@@ -55,13 +55,13 @@ export function CalendarGrid({ days, currentDate, events, getEventsForDate, onDa
                   ${isCurrentMonthDay
                     ? 'bg-white/50 dark:bg-gray-800/50 hover:bg-white/70 dark:hover:bg-gray-800/70'
                     : 'bg-white/20 dark:bg-gray-800/20 text-[var(--muted-foreground)]'}
-                  ${isTodayDate ? 'ring-2 ring-[#667eea] shadow-lg' : ''}
+                  ${isTodayDate ? 'ring-2 ring-[var(--primary-solid)] shadow-lg' : ''}
                 `}
               >
                 <div className={`
                   text-sm font-semibold mb-2
                   ${isTodayDate
-                    ? 'w-7 h-7 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white flex items-center justify-center'
+                    ? 'w-7 h-7 rounded-full bg-[var(--primary-solid)] text-white flex items-center justify-center'
                     : ''}
                 `}>
                   {date.getDate()}

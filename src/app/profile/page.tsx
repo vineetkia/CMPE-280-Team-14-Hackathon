@@ -109,27 +109,22 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      {/* Gradient header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#667eea] to-[#764ba2] p-8">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-            <Shield className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
-            <p className="text-white/80 mt-1">Manage your account information and security</p>
-          </div>
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-3 mb-1">
+          <Shield className="w-6 h-6 text-[var(--primary-solid)]" />
+          <h1 className="text-2xl font-semibold text-[var(--foreground)] tracking-tight">Settings</h1>
         </div>
+        <p className="text-sm text-[var(--muted-foreground)] ml-9">Manage your account information and security</p>
       </div>
 
       {/* Two-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Information Card */}
-        <div className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-lg">
+        <div className="backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-4 md:p-6 shadow-lg glass-panel">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20">
-              <User className="w-5 h-5 text-[#667eea]" />
+            <div className="p-2 rounded-lg bg-[var(--accent)]">
+              <User className="w-5 h-5 text-[var(--primary-solid)]" />
             </div>
             <h2 className="text-xl font-semibold text-[var(--foreground)]">Personal Information</h2>
           </div>
@@ -146,7 +141,7 @@ export default function ProfilePage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[#667eea]/50 focus:border-[#667eea] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-solid)]/25 focus:border-[var(--primary-solid)] transition-colors"
                   placeholder="Enter your name"
                 />
               </div>
@@ -163,7 +158,7 @@ export default function ProfilePage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[#667eea]/50 focus:border-[#667eea] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-solid)]/25 focus:border-[var(--primary-solid)] transition-colors"
                   placeholder="Enter your email"
                 />
               </div>
@@ -172,7 +167,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={savingInfo}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary-solid)] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
               {savingInfo ? 'Saving...' : 'Save Changes'}
@@ -181,10 +176,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Change Password Card */}
-        <div className="backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-6 shadow-lg">
+        <div className="backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl p-4 md:p-6 shadow-lg glass-panel">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-[#667eea]/20 to-[#764ba2]/20">
-              <Lock className="w-5 h-5 text-[#667eea]" />
+            <div className="p-2 rounded-lg bg-[var(--accent)]">
+              <Lock className="w-5 h-5 text-[var(--primary-solid)]" />
             </div>
             <h2 className="text-xl font-semibold text-[var(--foreground)]">Change Password</h2>
           </div>
@@ -201,7 +196,7 @@ export default function ProfilePage() {
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[#667eea]/50 focus:border-[#667eea] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-solid)]/25 focus:border-[var(--primary-solid)] transition-colors"
                   placeholder="Enter current password"
                 />
               </div>
@@ -218,7 +213,7 @@ export default function ProfilePage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[#667eea]/50 focus:border-[#667eea] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-solid)]/25 focus:border-[var(--primary-solid)] transition-colors"
                   placeholder="Enter new password (min 6 characters)"
                 />
               </div>
@@ -235,7 +230,7 @@ export default function ProfilePage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[#667eea]/50 focus:border-[#667eea] transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-solid)]/25 focus:border-[var(--primary-solid)] transition-colors"
                   placeholder="Confirm new password"
                 />
               </div>
@@ -244,7 +239,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={savingPassword}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary-solid)] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
               {savingPassword ? 'Updating...' : 'Update Password'}

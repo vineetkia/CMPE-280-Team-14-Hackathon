@@ -19,7 +19,7 @@ export function CalendarHeader({ currentDate, onPrevMonth, onNextMonth, onAddEve
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={glassCard + ' p-6'}
+      className={glassCard + ' p-4 md:p-6'}
     >
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold text-[var(--foreground)]">Calendar</h1>
@@ -34,7 +34,7 @@ export function CalendarHeader({ currentDate, onPrevMonth, onNextMonth, onAddEve
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
-            <span className="text-lg font-semibold min-w-[160px] text-center">
+            <span className="text-lg font-semibold min-w-[120px] sm:min-w-[160px] text-center">
               {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
             </span>
             <motion.button

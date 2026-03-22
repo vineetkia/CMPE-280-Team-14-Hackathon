@@ -16,7 +16,7 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ messages, isLoading, messagesEndRef, streamingContent }: ChatMessagesProps) {
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-6">
+    <div className="flex-1 min-h-0 overflow-y-auto p-3 md:p-6">
       <div className="space-y-6 max-w-4xl mx-auto">
         <AnimatePresence mode="popLayout">
           {messages.map((message, index) => {
@@ -32,7 +32,7 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, streamingCon
                 className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === 'assistant' && (
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--primary-solid)] flex items-center justify-center flex-shrink-0 mt-1">
                     <Sparkles className={`w-4 h-4 text-white ${isLastAssistant ? 'animate-pulse' : ''}`} />
                   </div>
                 )}
@@ -40,7 +40,7 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, streamingCon
                   className={`
                     max-w-[75%] p-4 rounded-2xl overflow-hidden
                     ${message.role === 'user'
-                      ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                      ? 'bg-[var(--primary-solid)] text-white'
                       : 'bg-[var(--secondary)] text-[var(--foreground)]'}
                   `}
                 >
@@ -69,7 +69,7 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, streamingCon
                   )}
                 </div>
                 {message.role === 'user' && (
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#764ba2] to-[#667eea] flex items-center justify-center flex-shrink-0 text-white font-semibold text-xs mt-1">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--primary-solid)] flex items-center justify-center flex-shrink-0 text-white font-semibold text-xs mt-1">
                     JD
                   </div>
                 )}
@@ -84,7 +84,7 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, streamingCon
             animate={{ opacity: 1, y: 0 }}
             className="flex gap-3"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[var(--primary-solid)] flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white animate-pulse" />
             </div>
             <div className="bg-[var(--secondary)] px-5 py-3 rounded-2xl">

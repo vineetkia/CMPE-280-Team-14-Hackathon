@@ -34,7 +34,7 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
       {action && (
         <Button
           onClick={action.onClick}
-          className="bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-lg hover:shadow-[#667eea]/30"
+          className="bg-[var(--primary-solid)] hover:shadow-lg hover:"
         >
           {action.icon && <action.icon className="w-4 h-4 mr-2" />}
           {action.label}

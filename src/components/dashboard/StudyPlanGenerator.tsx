@@ -83,7 +83,7 @@ export function StudyPlanGenerator() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`${glassCard} p-6 glass-shine`}
+      className={`${glassCard} p-4 md:p-6 glass-shine`}
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500">

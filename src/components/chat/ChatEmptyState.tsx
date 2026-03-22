@@ -23,7 +23,7 @@ export function ChatEmptyState({ onSendMessage }: ChatEmptyStateProps) {
       animate={{ opacity: 1, y: 0 }}
       className="text-center py-12"
     >
-      <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] mb-6">
+      <div className="inline-flex p-4 rounded-2xl bg-[var(--primary-solid)] mb-6">
         <Sparkles className="w-12 h-12 text-white" />
       </div>
       <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">

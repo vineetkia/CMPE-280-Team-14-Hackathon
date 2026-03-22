@@ -56,7 +56,7 @@ export function CalendarAgenda({ currentDate, events, onDateClick }: CalendarAge
                   className={`
                     w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold
                     ${isToday(date)
-                      ? 'bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white'
+                      ? 'bg-[var(--primary-solid)] text-white'
                       : 'bg-[var(--secondary)] text-[var(--foreground)]'}
                   `}
                 >

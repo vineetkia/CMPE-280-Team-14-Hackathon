@@ -34,10 +34,10 @@ export function AskAI() {
   return (
     <motion.div
       variants={item}
-      className="backdrop-blur-xl bg-gradient-to-br from-[var(--glass)] to-[var(--glass-hover)] border border-[var(--glass-border)] rounded-2xl p-8 shadow-xl glass-shine"
+      className="backdrop-blur-2xl bg-gradient-to-br from-[var(--glass)] to-[var(--glass-hover)] border border-[var(--glass-border)] rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg glass-panel glass-shine"
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+        <div className="p-3 rounded-xl bg-[var(--primary-solid)]">
           <Sparkles className="w-6 h-6 text-white" />
         </div>
         <div>
@@ -62,7 +62,7 @@ export function AskAI() {
         />
         <Button
           onClick={handleAskAI}
-          className="w-full sm:w-auto bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-lg hover:shadow-[#667eea]/30 transition-all"
+          className="w-full sm:w-auto bg-[var(--primary-solid)] hover:shadow-lg hover: transition-all"
         >
           <Sparkles className="w-4 h-4 mr-2" />
           Ask AI

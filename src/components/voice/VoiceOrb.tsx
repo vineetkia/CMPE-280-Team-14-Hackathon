@@ -15,7 +15,7 @@ import './voice-orb.css';
  * Each state has a unique color mood and movement speed.
  */
 
-const ORB_SIZE = 72;
+const ORB_SIZE = 56;
 
 // ── State palettes ──────────────────────────────────────────
 interface SmokePalette {
@@ -29,54 +29,54 @@ interface SmokePalette {
 const PALETTES: Record<string, SmokePalette> = {
   idle: {
     blobs: [
-      'rgba(139,92,246,0.55)',
-      'rgba(99,102,241,0.45)',
-      'rgba(59,130,246,0.4)',
-      'rgba(168,85,247,0.35)',
-      'rgba(79,70,229,0.3)',
+      'rgba(59,130,246,0.45)',
+      'rgba(99,102,241,0.35)',
+      'rgba(59,130,246,0.3)',
+      'rgba(96,165,250,0.25)',
+      'rgba(37,99,235,0.2)',
     ],
-    core: 'rgba(199,210,254,0.5)',
-    bg: 'radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f0a2a 100%)',
-    shadow: '0 0 20px rgba(99,102,241,0.3), inset 0 0 20px rgba(99,102,241,0.1)',
+    core: 'rgba(191,219,254,0.4)',
+    bg: 'radial-gradient(circle at 50% 50%, #111827 0%, #09090b 100%)',
+    shadow: '0 0 15px rgba(59,130,246,0.2), inset 0 0 15px rgba(59,130,246,0.08)',
     speed: 1,
   },
   listening: {
     blobs: [
-      'rgba(236,72,153,0.6)',
-      'rgba(168,85,247,0.55)',
-      'rgba(56,189,248,0.5)',
-      'rgba(232,121,249,0.5)',
-      'rgba(34,211,238,0.4)',
+      'rgba(59,130,246,0.6)',
+      'rgba(37,99,235,0.55)',
+      'rgba(96,165,250,0.5)',
+      'rgba(59,130,246,0.5)',
+      'rgba(147,197,253,0.4)',
     ],
-    core: 'rgba(250,232,255,0.6)',
-    bg: 'radial-gradient(circle at 50% 50%, #1e1044 0%, #0a0520 100%)',
-    shadow: '0 0 30px rgba(168,85,247,0.45), inset 0 0 25px rgba(168,85,247,0.15)',
+    core: 'rgba(219,234,254,0.55)',
+    bg: 'radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%)',
+    shadow: '0 0 25px rgba(59,130,246,0.4), inset 0 0 20px rgba(59,130,246,0.12)',
     speed: 2,
   },
   processing: {
     blobs: [
-      'rgba(129,140,248,0.55)',
       'rgba(99,102,241,0.5)',
-      'rgba(165,180,252,0.45)',
-      'rgba(192,132,252,0.4)',
-      'rgba(139,92,246,0.35)',
+      'rgba(59,130,246,0.45)',
+      'rgba(129,140,248,0.4)',
+      'rgba(96,165,250,0.35)',
+      'rgba(37,99,235,0.3)',
     ],
-    core: 'rgba(224,231,255,0.55)',
-    bg: 'radial-gradient(circle at 50% 50%, #1a1545 0%, #0c0825 100%)',
-    shadow: '0 0 25px rgba(99,102,241,0.4), inset 0 0 20px rgba(99,102,241,0.1)',
+    core: 'rgba(199,210,254,0.5)',
+    bg: 'radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f172a 100%)',
+    shadow: '0 0 20px rgba(99,102,241,0.35), inset 0 0 18px rgba(99,102,241,0.1)',
     speed: 1.5,
   },
   speaking: {
     blobs: [
-      'rgba(34,211,238,0.55)',
-      'rgba(6,182,212,0.5)',
-      'rgba(56,189,248,0.5)',
-      'rgba(52,211,153,0.4)',
-      'rgba(20,184,166,0.35)',
+      'rgba(34,211,238,0.45)',
+      'rgba(6,182,212,0.4)',
+      'rgba(56,189,248,0.4)',
+      'rgba(52,211,153,0.3)',
+      'rgba(20,184,166,0.25)',
     ],
-    core: 'rgba(207,250,254,0.55)',
-    bg: 'radial-gradient(circle at 50% 50%, #0c1a2e 0%, #050d1a 100%)',
-    shadow: '0 0 30px rgba(6,182,212,0.45), inset 0 0 25px rgba(6,182,212,0.12)',
+    core: 'rgba(207,250,254,0.45)',
+    bg: 'radial-gradient(circle at 50% 50%, #0c1a2e 0%, #09090b 100%)',
+    shadow: '0 0 20px rgba(6,182,212,0.3), inset 0 0 18px rgba(6,182,212,0.08)',
     speed: 1.8,
   },
 };
@@ -97,7 +97,7 @@ export function VoiceOrb() {
   if (!isSupported) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-50" role="region" aria-label="Voice assistant">
+    <div className="fixed bottom-6 right-6 z-50" role="region" aria-label="Voice assistant">
       {/* ── Transcript bubbles ─────────────────────────── */}
       <AnimatePresence>
         {orbState === 'idle' && isPassiveListening && (

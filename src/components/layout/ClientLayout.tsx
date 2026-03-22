@@ -9,7 +9,7 @@ import { VoiceAssistantProvider } from "@/context/VoiceAssistantContext";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { VoiceOrb } from "@/components/voice/VoiceOrb";
+import { VoiceTranscriptOverlay } from "@/components/voice/VoiceTranscriptOverlay";
 import { Toaster } from "@/components/ui/toaster";
 
 const authPages = ['/login', '/register'];
@@ -35,7 +35,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <AuthProvider>
         <VoiceAssistantProvider>
-          <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#667eea] via-[#764ba2] to-[#667eea] bg-[length:200%_200%] animate-gradient">
+          <div className="flex h-screen overflow-hidden bg-[var(--background-solid)]">
             <a
               href="#main-content"
               className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-black"
@@ -77,7 +77,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
               </main>
             </div>
           </div>
-          <VoiceOrb />
+          <VoiceTranscriptOverlay />
           <Toaster />
         </VoiceAssistantProvider>
       </AuthProvider>

@@ -24,7 +24,7 @@ export function AssignmentStats({ stats }: AssignmentStatsProps) {
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="grid grid-cols-1 md:grid-cols-4 gap-4"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4"
     >
       {statItems.map((stat, index) => (
         <motion.div
@@ -38,7 +38,7 @@ export function AssignmentStats({ stats }: AssignmentStatsProps) {
             damping: 24
           }}
           whileHover={{ scale: 1.05, y: -5, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-          className={glassCard + ' p-6 glass-shine'}
+          className={glassCard + ' p-4 md:p-6 glass-shine'}
         >
           <h3 className="text-sm text-[var(--muted-foreground)] mb-2">{stat.label}</h3>
           <p className={`text-4xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>

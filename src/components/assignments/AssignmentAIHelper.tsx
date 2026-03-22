@@ -142,7 +142,7 @@ export function AssignmentAIHelper({ assignment }: AssignmentAIHelperProps) {
             <div key={i} className={`mb-3 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
               <div className={`inline-block max-w-[85%] p-3 rounded-xl text-sm overflow-hidden ${
                 msg.role === 'user'
-                  ? 'bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white'
+                  ? 'bg-[var(--primary-solid)] text-white'
                   : 'bg-[var(--secondary)] text-[var(--foreground)]'
               }`}>
                 <div className="break-words">
@@ -180,7 +180,7 @@ export function AssignmentAIHelper({ assignment }: AssignmentAIHelperProps) {
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
             size="icon"
-            className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shrink-0"
+            className="bg-[var(--primary-solid)] text-white shrink-0"
             aria-label="Send message"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

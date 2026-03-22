@@ -94,7 +94,7 @@ function ChatPageContent() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex-1 min-w-0 backdrop-blur-xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-xl flex flex-col overflow-hidden"
+        className="flex-1 min-w-0 backdrop-blur-2xl bg-[var(--glass)] border border-[var(--glass-border)] rounded-2xl shadow-lg glass-panel flex flex-col overflow-hidden"
       >
         {/* Mobile toggle for conversation list */}
         <div className="md:hidden p-3 border-b border-[var(--border)]">
@@ -136,7 +136,7 @@ function ChatPageContent() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <div className="inline-flex p-6 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] mb-6">
+              <div className="inline-flex p-6 rounded-2xl bg-[var(--primary-solid)] mb-6">
                 <Sparkles className="w-16 h-16 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">
@@ -147,7 +147,7 @@ function ChatPageContent() {
               </p>
               <Button
                 onClick={createConversation}
-                className="bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-lg hover:shadow-[#667eea]/30"
+                className="bg-[var(--primary-solid)] hover:shadow-lg hover:"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 New Chat

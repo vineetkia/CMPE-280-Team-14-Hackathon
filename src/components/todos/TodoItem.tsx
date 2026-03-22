@@ -32,7 +32,7 @@ export function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
       whileHover={{ y: -2, scale: 1.005, transition: { type: 'spring', stiffness: 400, damping: 30 } }}
-      className={`${glassCard} p-6 glass-shine hover:shadow-2xl transition-shadow group`}
+      className={`${glassCard} p-4 md:p-6 glass-shine hover:shadow-2xl transition-shadow group`}
     >
       <div className="flex items-start gap-4">
         <Checkbox
@@ -49,7 +49,7 @@ export function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemProps) {
             >
               {todo.title}
             </h3>
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}

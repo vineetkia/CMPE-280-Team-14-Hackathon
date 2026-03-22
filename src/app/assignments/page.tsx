@@ -92,7 +92,7 @@ export default function AssignmentsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <AssignmentStats stats={stats} />
 
       <AssignmentFilters

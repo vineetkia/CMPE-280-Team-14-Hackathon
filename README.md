@@ -39,20 +39,21 @@ Here is a suggested flow for demonstrating StudyPilot in class:
 4. **Assignments** — Open the Assignments page. Click the sparkle icon on any assignment to open the AI tutor — it knows which assignment you selected and gives contextual help.
 5. **Calendar** — Show the month grid on desktop, then resize the browser to demonstrate the responsive agenda view on mobile.
 6. **AI Chat** — Open the Chat page and ask a study question. Point out the streaming text effect (words appear one by one, not all at once) and the blinking cursor.
-7. **Voice Assistant** — Click the animated orb in the bottom-left corner. Say "Add a todo to study for the math exam" and watch it create the task. Say "Go to calendar" to navigate by voice. Show the orb's color transitions between idle → listening → processing → speaking states.
+7. **Voice Assistant** — Click the **Voice Assistant** button in the sidebar (or press Ctrl+Shift+V). Say "Add a todo" and watch it open the form. Say "Go to calendar" to navigate by voice. The sidebar button shows real-time state with animated indicators and sound bars.
 8. **Accessibility** — Show the `prefers-reduced-motion` behavior (all animations stop). Mention ARIA labels, keyboard navigation, and WCAG AA contrast.
 
 ---
 
 ## Technical Summary
 
-Built with Next.js 16, backed by a PostgreSQL database running in Docker, and powered by Azure OpenAI GPT-5.2, the app features real-time AI streaming, a voice-first interface using Azure Speech Services, a glassmorphism design system with dark/light themes, and a fully responsive interface that works seamlessly on desktop and mobile.
+Built with Next.js 16, backed by a PostgreSQL database running in Docker, and powered by Azure OpenAI GPT-5.2, the app features JWT authentication with user-scoped data isolation, real-time AI streaming, a voice-first interface using Azure Speech Services, a glassmorphism design system with dark/light themes, and a fully responsive interface that works seamlessly on desktop and mobile. Deployed on an Azure Ubuntu VM with Docker Compose.
 
 ### Key Highlights
 
 - **4 AI-powered features** — Chat, Study Plan Generator, Assignment AI Tutor, Todo Suggestions — all using GPT-5.2 with real-time streaming
 - **Voice-first interface** — Full app control via voice commands with wake word "Hey StudyPilot"
-- **Full-stack architecture** — PostgreSQL 16 + Prisma ORM + 14 RESTful API routes + Docker containerization
+- **JWT authentication** — Secure login/register with httpOnly cookies, bcrypt password hashing, and user-scoped data isolation
+- **Full-stack architecture** — PostgreSQL 16 + Prisma ORM + 19 RESTful API routes + Docker containerization
 - **315 unit tests** across 52 test files with 87%+ code coverage
 - **50+ React components** with a glassmorphism design system, dark/light themes, and 15+ reusable animation variants
 - **Accessibility-first** — WCAG AA compliance, `prefers-reduced-motion` support, ARIA labels, keyboard navigation, screen reader support
@@ -106,7 +107,7 @@ Desktop users get a full month grid with color-coded event dots. On mobile, it s
 A conversational interface for asking study questions, getting explanations, or working through problems. Messages stream in real-time via Server-Sent Events, so you see the response building word by word instead of waiting for a wall of text. Conversation history is persisted to the PostgreSQL database, and you can manage multiple conversations with a sidebar conversation list.
 
 ### 6. Voice Assistant
-A Siri-style voice interface that lets users control the entire application hands-free. The animated orb uses a smoke/aurora effect -- five independently drifting color blobs with organic fade pulses create an ethereal, gaseous atmosphere around a glass sphere. Each of the four states (idle, listening, processing, speaking) has a unique color palette and animation speed, with state icons (mic, wave bars, bouncing dots, wave form) transitioning smoothly via Framer Motion. Powered by Azure Speech SDK for high-accuracy speech-to-text and Azure Neural TTS (`en-US-JennyNeural`) for natural-sounding spoken responses. Supports a "Hey StudyPilot" wake word for passive activation, natural language commands for CRUD operations (e.g., "Add a todo to study for physics"), page navigation, and conversational AI queries -- all with spoken feedback.
+A voice-first interface that lets users control the entire application hands-free. The voice assistant is integrated into the sidebar as a navigation button with animated indicators -- a green dot for passive listening, a pulsing white dot and animated sound bars when actively listening, and contextual status text ("Processing...", "Speaking...") during command handling. Transcript notifications appear as floating glassmorphism badges at the top-center of the screen, showing real-time speech-to-text and AI responses. Powered by Azure Speech SDK for high-accuracy speech-to-text and Azure Neural TTS (`en-US-JennyNeural`) for natural-sounding spoken responses. Supports a "Hey StudyPilot" wake word for passive activation, natural language commands for CRUD operations (e.g., "Add a todo to study for physics"), page navigation, theme switching, and conversational AI queries -- all with spoken feedback.
 
 ---
 
@@ -122,10 +123,11 @@ A Siri-style voice interface that lets users control the entire application hand
 | AI Backend | Azure OpenAI (GPT-5.2), Server-Sent Events streaming |
 | Voice Assistant | Azure Speech SDK (STT + TTS), wake word detection |
 | Database | PostgreSQL 16 with Prisma ORM v6 |
+| Authentication | JWT (httpOnly cookies) + bcryptjs password hashing |
 | Containerization | Docker Compose (PostgreSQL + Next.js) |
 | State Management | React hooks + REST API persistence |
 | Testing | Vitest + React Testing Library (315 tests, 87%+ coverage) |
-| Deployment | Docker Compose / Vercel + managed PostgreSQL |
+| Deployment | Azure Ubuntu VM + Docker Compose |
 
 ---
 
@@ -318,7 +320,7 @@ We decomposed the UI into focused, single-responsibility components with a clear
   - `useConversations` -- Chat history via REST API with conversation switching and AI streaming
   - `useReducedMotion` -- `prefers-reduced-motion` media query detection
   - `useToast` -- Toast notification queue management
-- **2 context providers:** `ThemeContext` (light/dark mode), `VoiceAssistantContext` (Azure Speech SDK, wake word, command routing)
+- **3 context providers:** `AuthContext` (JWT authentication, login/register/logout, user state), `ThemeContext` (light/dark mode), `VoiceAssistantContext` (Azure Speech SDK, wake word, command routing)
 - **1 ErrorBoundary** for graceful crash recovery with retry UI
 
 All data hooks communicate with the PostgreSQL backend through Next.js API routes and Prisma ORM. The frontend makes standard `fetch()` calls to RESTful endpoints, and the database handles persistence, ensuring data survives browser clears and is accessible from any device.
@@ -331,88 +333,64 @@ StudyPilot uses a full-stack architecture with a PostgreSQL database, Prisma ORM
 
 ### Architecture Diagram
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                        Browser Client                                │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐   │
-│  │  React UI    │  │ Voice Asst.  │  │   AI Streaming Client    │   │
-│  │  (Next.js)   │  │ (Azure SDK)  │  │   (SSE via fetch)        │   │
-│  └──────┬───────┘  └──────┬───────┘  └────────────┬─────────────┘   │
-│         │                 │                        │                  │
-└─────────┼─────────────────┼────────────────────────┼─────────────────┘
-          │ REST API        │ WebSocket              │ SSE Stream
-          ▼                 ▼                        ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                    Next.js API Routes (Server)                       │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────────┐   │
-│  │ /api/todos │ │/api/assign.│ │/api/events │ │/api/convers.   │   │
-│  │  GET POST  │ │  GET POST  │ │  GET POST  │ │  GET POST      │   │
-│  │  PATCH DEL │ │  PATCH DEL │ │  PATCH DEL │ │  PATCH DEL     │   │
-│  └─────┬──────┘ └─────┬──────┘ └─────┬──────┘ └──────┬─────────┘   │
-│        │              │              │                │              │
-│  ┌─────┴──────────────┴──────────────┴────────────────┴──────┐      │
-│  │                    Prisma ORM v6                            │      │
-│  │           (Connection pooling, type-safe queries)          │      │
-│  └────────────────────────────┬───────────────────────────────┘      │
-│                               │                                      │
-│  ┌────────────────────────────┼──────────────────────────────┐      │
-│  │ /api/chat  │ /api/ai/study-plan │ /api/ai/todo-suggestions│      │
-│  │            │                    │                          │      │
-│  └────────────┼────────────────────┼──────────────────────────┘      │
-│               │ SSE Proxy          │                                 │
-└───────────────┼────────────────────┼─────────────────────────────────┘
-                │                    │
-                ▼                    ▼
-┌───────────────────────┐  ┌───────────────────────┐
-│   PostgreSQL 16       │  │   Azure Cloud          │
-│   (Docker Container)  │  │   ┌─────────────────┐  │
-│                       │  │   │ OpenAI GPT-5.2  │  │
-│   Tables:             │  │   │ (Chat, Plans,   │  │
-│   • todos             │  │   │  Suggestions)   │  │
-│   • assignments       │  │   └─────────────────┘  │
-│   • calendar_events   │  │   ┌─────────────────┐  │
-│   • conversations     │  │   │ Speech Services │  │
-│   • messages          │  │   │ (STT + TTS)     │  │
-│                       │  │   └─────────────────┘  │
-└───────────────────────┘  └───────────────────────┘
-```
+![StudyPilot Architecture](diagram/architecture-diagram.png)
+
+The application runs on an **Azure Ubuntu VM** with Docker Engine hosting two containers inside an Azure Virtual Network:
+
+- **studypilot-app** (Next.js 16) — serves the React frontend and API routes on port 3001
+- **studypilot-db** (PostgreSQL 16) — persistent data storage with a Docker volume, connected via internal Docker network
+
+External Azure services:
+- **Azure OpenAI Service (GPT-5.2)** — called server-side from Next.js API routes for AI chat, study plans, assignment help, and todo suggestions via SSE streaming
+- **Azure Speech Services** — called directly from the browser client via WebSocket for real-time voice transcription and wake word detection
 
 ### Database Schema (Prisma)
 
-Five models with relations, managed via Prisma migrations:
+Six models with relations, managed via Prisma migrations:
 
 | Model | Fields | Purpose |
 |-------|--------|---------|
-| `Todo` | id, title, description, completed, priority, category, dueDate | Task management |
-| `Assignment` | id, title, subject, description, dueDate, status, priority, grade | Assignment tracking |
-| `CalendarEvent` | id, title, description, date, endDate, type, color | Calendar events |
-| `Conversation` | id, title, messages[] | Chat history container |
+| `User` | id, name, email, passwordHash, createdAt, updatedAt | Authentication and user identity |
+| `Todo` | id, title, description, completed, priority, category, dueDate, userId | Task management |
+| `Assignment` | id, title, subject, description, dueDate, status, priority, grade, userId | Assignment tracking |
+| `CalendarEvent` | id, title, description, date, endDate, type, color, userId | Calendar events |
+| `Conversation` | id, title, messages[], userId | Chat history container |
 | `Message` | id, role, content, timestamp, conversationId | Individual chat messages |
+
+All data models are scoped by `userId` with foreign key constraints and cascade deletes, ensuring complete multi-tenant data isolation.
 
 ### API Routes
 
 | Endpoint | Methods | Description |
 |----------|---------|-------------|
-| `/api/todos` | GET, POST | List all todos / create new todo |
-| `/api/todos/[id]` | PATCH, DELETE | Update / delete a specific todo |
-| `/api/assignments` | GET, POST | List all assignments / create new |
-| `/api/assignments/[id]` | PATCH, DELETE | Update / delete a specific assignment |
-| `/api/events` | GET, POST | List all calendar events / create new |
-| `/api/events/[id]` | PATCH, DELETE | Update / delete a specific event |
-| `/api/conversations` | GET, POST | List conversations (with messages) / create new |
-| `/api/conversations/[id]` | GET, PATCH, DELETE | Get / rename / delete a conversation |
-| `/api/conversations/[id]/messages` | POST | Add a message to a conversation |
+| `/api/auth/register` | POST | Create new user account |
+| `/api/auth/login` | POST | Authenticate and set JWT cookie |
+| `/api/auth/logout` | POST | Clear authentication cookie |
+| `/api/auth/me` | GET | Get current authenticated user |
+| `/api/auth/profile` | PATCH | Update user name, email, or password |
+| `/api/todos` | GET, POST | List user's todos / create new todo |
+| `/api/todos/[id]` | PATCH, DELETE | Update / delete a specific todo (ownership verified) |
+| `/api/assignments` | GET, POST | List user's assignments / create new |
+| `/api/assignments/[id]` | PATCH, DELETE | Update / delete a specific assignment (ownership verified) |
+| `/api/events` | GET, POST | List user's calendar events / create new |
+| `/api/events/[id]` | PATCH, DELETE | Update / delete a specific event (ownership verified) |
+| `/api/conversations` | GET, POST | List user's conversations / create new |
+| `/api/conversations/[id]` | GET, PATCH, DELETE | Get / rename / delete a conversation (ownership verified) |
+| `/api/conversations/[id]/messages` | POST | Add a message to a conversation (ownership verified) |
 | `/api/chat` | POST | Azure OpenAI streaming proxy |
 | `/api/ai/study-plan` | POST | AI study plan generation (streaming) |
 | `/api/ai/todo-suggestions` | POST | AI todo suggestions (JSON) |
 | `/api/health` | GET | Database connectivity check |
 
+All data endpoints require JWT authentication via httpOnly cookies. CRUD operations verify resource ownership before allowing modifications.
+
 ### Docker Infrastructure
 
-The application is fully containerized with Docker Compose:
+The application is fully containerized with Docker Compose and deployed on an **Azure Ubuntu VM** inside an Azure Virtual Network with a Network Security Group:
 
 - **`studypilot-db`**: PostgreSQL 16 Alpine with health checks and persistent volume
 - **`studypilot-app`**: Multi-stage Next.js build (deps → builder → runner) with standalone output, Prisma migrations on startup, runs as non-root user
+- **Internal Docker network**: The app container communicates with the database container over an isolated bridge network — the database is never exposed to the public internet
 
 ---
 
@@ -430,25 +408,70 @@ The voice assistant is a core differentiator -- it makes StudyPilot usable for s
 
 ### Supported Voice Commands
 
-| Category | Examples |
-|----------|---------|
-| **Todo Management** | "Add a todo to study for physics exam", "Complete my first todo", "Show my todos" |
-| **Navigation** | "Go to assignments", "Open calendar", "Show dashboard" |
-| **AI Queries** | "What is the Pythagorean theorem?", "Help me study for my CS midterm" |
-| **Control** | "Hey StudyPilot" (wake), click orb to activate/deactivate |
+#### Activation
+| Method | How |
+|--------|-----|
+| Wake Word | Say **"Hey StudyPilot"** (also recognizes "Hi StudyPilot", "Hey Study Pilot", etc.) |
+| Click | Click the **Voice Assistant** button in the sidebar |
+| Keyboard | Press **Ctrl+Shift+V** (or **Cmd+Shift+V** on Mac) |
 
-### Visual Feedback (Siri-Style Orb)
+#### Navigation Commands
+| Command | What It Does | Example Phrases |
+|---------|-------------|-----------------|
+| Go to Dashboard | Navigate to the home dashboard | "Go to dashboard", "Open home", "Show main page", "Take me to the dashboard" |
+| Go to Todos | Navigate to the todo list | "Go to todos", "Open tasks", "Show my to-do list", "Take me to tasks" |
+| Go to Calendar | Navigate to the calendar | "Go to calendar", "Open schedule", "Show my events", "Navigate to calendar" |
+| Go to Assignments | Navigate to assignments | "Go to assignments", "Open homework", "Show assignments" |
+| Go to Chat | Navigate to AI chat | "Go to chat", "Open AI chat", "Show the assistant" |
 
-The voice orb uses a CSS smoke/aurora animation system. Five color blobs drift along independent organic paths with staggered fade pulses, creating a gaseous, living atmosphere around a glass sphere with core glow and specular highlights. All animations use pure CSS `@keyframes` (imported via `voice-orb.css`) for reliable rendering across page reloads.
+#### Create Commands
+| Command | What It Does | Example Phrases |
+|---------|-------------|-----------------|
+| Add a Todo | Opens the new todo form | "Add a todo", "Create a task", "Make a new to-do", "New task" |
+| Add an Assignment | Opens the new assignment form | "Add an assignment", "Create homework", "New assignment" |
+| Add an Event | Opens the new event form | "Add an event", "Create a meeting", "New class", "Add a study session" |
+| New Chat | Starts a new AI conversation | "New chat", "Start a conversation", "Create a conversation" |
 
-| State | Color Palette | Speed | Icon |
-|-------|--------------|-------|------|
-| Idle | Indigo/violet | 1× (slow drift) | Microphone |
-| Listening | Purple/magenta/cyan | 2× (energetic) | Animated wave bars |
-| Processing | Indigo/periwinkle | 1.5× (steady) | Bouncing dots |
-| Speaking | Cyan/teal/emerald | 1.8× (flowing) | Sound wave form |
+#### AI Query Commands
+| Command | What It Does | Example Phrases |
+|---------|-------------|-----------------|
+| Ask AI | Sends a question to the AI chat | "Ask AI about photosynthesis", "Tell the assistant about calculus", "Query StudyPilot about physics" |
 
-The orb respects `prefers-reduced-motion` -- all CSS and Framer Motion animations are disabled, showing a static glass sphere with the appropriate state icon.
+#### Theme Commands
+| Command | What It Does | Example Phrases |
+|---------|-------------|-----------------|
+| Toggle Theme | Switch between light and dark | "Switch theme", "Toggle theme", "Change theme" |
+| Dark Mode | Switch to dark mode | "Dark mode", "Go dark", "Switch to dark", "Enable dark mode", "Turn on dark" |
+| Light Mode | Switch to light mode | "Light mode", "Go light", "Switch to light", "Enable light mode", "Turn on light" |
+
+#### Control Commands
+| Command | What It Does | Example Phrases |
+|---------|-------------|-----------------|
+| Stop Listening | Deactivate the voice assistant | "Stop listening", "Goodbye", "Go to sleep", "Deactivate", "That's all", "Never mind", "Cancel" |
+
+#### How Voice Works
+1. **Wake Word Detection** — The app continuously listens for "Hey StudyPilot" using Azure Speech SDK (passive mode, shown by a green dot on the mic icon)
+2. **Command Capture** — After activation, you have a 10-second window to speak your command
+3. **Intent Processing** — Speech is matched against command patterns using regex-based NLP
+4. **Action Execution** — The matched command triggers navigation, form opening, or AI query
+5. **Voice Feedback** — Azure Neural TTS (`en-US-JennyNeural`) speaks a confirmation back to you (e.g., "Opening Assignments now", "Sure, opening the add todo form")
+6. **Return to Passive** — After completing the command, the assistant returns to wake word listening
+
+### Visual Feedback
+
+The voice assistant provides multi-layered visual feedback through the sidebar button and floating transcript badges:
+
+**Sidebar Button States:**
+| State | Visual | Description |
+|-------|--------|-------------|
+| Passive Listening | Green dot on mic icon | Listening for "Hey StudyPilot" wake word |
+| Active Listening | Blue background, pulsing white dot, animated sound bars | Capturing your voice command |
+| Processing | Blue background, "Processing..." text | Analyzing your command |
+| Speaking | Blue background, "Speaking..." text | AI is responding via TTS |
+| Idle | Default muted styling | Voice available but not active |
+
+**Floating Transcript Badges:**
+Voice transcripts appear as floating glassmorphism badges at the top-center of the screen, showing real-time speech-to-text, processing status, and AI responses.
 
 ---
 
@@ -582,6 +605,9 @@ The app runs fully without Azure credentials. All AI features gracefully fall ba
 # Database (required)
 DATABASE_URL=postgresql://studypilot:studypilot_secret@localhost:5432/studypilot
 
+# Authentication (required)
+JWT_SECRET=your-secret-key-here  # Generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
 # Azure OpenAI (optional -- falls back to mock responses)
 AZURE_OPENAI_ENDPOINT=https://your-resource.cognitiveservices.azure.com/openai/v1/
 AZURE_OPENAI_API_KEY=your-api-key-here
@@ -592,7 +618,7 @@ AZURE_SPEECH_KEY=your-speech-key-here
 AZURE_SPEECH_REGION=westus
 ```
 
-`DATABASE_URL` is required for the PostgreSQL backend. All Azure credentials are optional -- AI features fall back to mock responses and the voice assistant falls back to the browser's Web Speech API.
+`DATABASE_URL` and `JWT_SECRET` are required. All Azure credentials are optional -- AI features fall back to mock responses and the voice assistant falls back to the browser's Web Speech API.
 
 ---
 
@@ -602,13 +628,16 @@ AZURE_SPEECH_REGION=westus
 ├── docker-compose.yml              # PostgreSQL + Next.js service definitions
 ├── Dockerfile                      # Multi-stage build (deps → builder → runner)
 ├── docker-entrypoint.sh            # Runs migrations then starts the app
+├── diagram/
+│   └── architecture-diagram.png    # Azure deployment architecture diagram
 ├── prisma/
-│   ├── schema.prisma               # Database schema (5 models)
+│   ├── schema.prisma               # Database schema (6 models)
 │   ├── migrations/                 # Prisma migration history
-│   └── seed.sql                    # Sample data for development
+│   └── seed.sql                    # Sample data with demo user
 ├── src/
 │   ├── app/                        # Next.js App Router pages + API routes
 │   │   ├── api/
+│   │   │   ├── auth/              # register, login, logout, me, profile
 │   │   │   ├── todos/             # CRUD: GET, POST, PATCH, DELETE
 │   │   │   ├── assignments/       # CRUD: GET, POST, PATCH, DELETE
 │   │   │   ├── events/            # CRUD: GET, POST, PATCH, DELETE
@@ -619,6 +648,9 @@ AZURE_SPEECH_REGION=westus
 │   │   ├── assignments/           # Assignment tracker page
 │   │   ├── calendar/              # Calendar page
 │   │   ├── chat/                  # AI chat page
+│   │   ├── login/                 # Login page with glassmorphism UI
+│   │   ├── register/              # Registration page
+│   │   ├── profile/               # Profile settings (name, email, password)
 │   │   ├── todos/                 # Todo manager page
 │   │   ├── layout.tsx             # Root layout
 │   │   └── page.tsx               # Dashboard
@@ -630,16 +662,19 @@ AZURE_SPEECH_REGION=westus
 │   │   ├── layout/                # Sidebar, TopBar, ClientLayout (3)
 │   │   ├── shared/                # EmptyState (1)
 │   │   ├── todos/                 # TodoItem, TodoForm, TodoFilters, TodoHeader, TodoAISuggestions (5)
-│   │   ├── voice/                 # VoiceOrb (smoke/aurora CSS animation), VoiceTranscript, voice-orb.css (3)
+│   │   ├── voice/                 # VoiceTranscript, VoiceTranscriptOverlay, VoiceOrb (legacy), voice-orb.css (4)
 │   │   ├── ui/                    # 14 reusable primitives (Button, Dialog, Select, etc.)
 │   │   └── ErrorBoundary.tsx      # Crash recovery with retry UI
-│   ├── context/                   # ThemeContext, VoiceAssistantContext
+│   ├── context/                   # AuthContext, ThemeContext, VoiceAssistantContext
 │   ├── hooks/                     # Custom hooks (useTodos, useAssignments, useEvents, etc.)
-│   ├── lib/                       # prisma.ts, azure-openai.ts, constants, animations
+│   ├── lib/                       # prisma.ts, auth.ts, azure-openai.ts, constants, animations
+│   │   └── auth.ts                # JWT verification, requireAuth() middleware
 │   ├── types/                     # TypeScript interfaces
 │   └── __tests__/                 # 52 test files mirroring src/ structure
-└── docs/
-    └── architecture.mmd           # Mermaid architecture diagram
+├── docs/
+│   └── architecture.mmd           # Mermaid architecture diagram
+└── diagram/
+    └── architecture-diagram.png   # Azure deployment architecture diagram
 ```
 
 ---
@@ -771,12 +806,12 @@ We deliberately avoided the "flat white dashboard" look that dominates most prod
 **Challenge: Animation performance.** Early iterations had per-cell animations on the calendar grid (42 cells, each with a spring entrance), which caused visible jank on mid-range devices. We removed individual cell animations and kept only a single container fade, solving the performance issue without sacrificing perceived polish.
 
 **Future improvements:**
-- User authentication and cloud sync for cross-device access
 - Google Calendar API integration to import existing schedules
 - Study analytics with time tracking (planned vs. actual study time)
 - Collaborative study groups with shared task boards
 - Push notifications for approaching deadlines
 - PWA support for offline access and home screen install
+- OAuth integration (Google, GitHub) for single sign-on
 
 ---
 
@@ -786,11 +821,12 @@ We deliberately avoided the "flat white dashboard" look that dominates most prod
 Clear, relatable problem that every student on the team has experienced firsthand. Realistic scope for a four-person team working within a semester. Well-defined target user (college students managing coursework across multiple classes). Five distinct modules that each solve a specific pain point without trying to boil the ocean.
 
 ### Technical Execution (6 pts)
-Next.js 16 with App Router and TypeScript throughout the entire codebase. Full PostgreSQL backend with Prisma ORM, 14 RESTful API routes, and Docker containerization. Azure Speech SDK voice assistant with Siri-style smoke/aurora animated orb. 315 tests with 87%+ coverage across 52 test files. Clean component decomposition with 40+ components and custom hooks. Real AI integration with SSE streaming (not just a fetch-and-display wrapper). Server-side API proxy for secure credential handling. Centralized animation library and design token system.
+Next.js 16 with App Router and TypeScript throughout the entire codebase. Full PostgreSQL backend with Prisma ORM, 19 RESTful API routes, JWT authentication with httpOnly cookies, and Docker containerization deployed on Azure VM. Azure Speech SDK voice assistant with Siri-style smoke/aurora animated orb. 315 tests with 87%+ coverage across 52 test files. Clean component decomposition with 40+ components and custom hooks. Real AI integration with SSE streaming (not just a fetch-and-display wrapper). Server-side API proxy for secure credential handling. Centralized animation library and design token system.
 
 ### Engineering Decision-Making (4 pts)
+- **JWT authentication with httpOnly cookies** -- secure, stateless auth with bcrypt password hashing. httpOnly cookies prevent XSS token theft. All API routes verify ownership before allowing data access, ensuring complete multi-tenant isolation
 - **PostgreSQL + Prisma ORM** over localStorage -- real database with migrations, relations, and server-side persistence. Data survives browser clears and enables multi-device access
-- **Docker Compose** for one-command infrastructure setup -- PostgreSQL + Next.js containerized with health checks and persistent volumes
+- **Azure VM + Docker Compose** -- production deployment on Azure Ubuntu VM with NSG firewall rules. Docker Compose orchestrates both containers with health checks and persistent volumes
 - **Azure Speech SDK** for voice assistant -- enterprise-grade STT/TTS with fallback to Web Speech API when credentials are unavailable
 - **Multi-stage Docker build** -- deps → builder → runner stages minimize image size, non-root user for security
 - Glassmorphism design system with shared tokens instead of ad-hoc per-component styling
@@ -819,12 +855,12 @@ Component-based architecture enabled parallel development -- team members could 
 
 ## Future Improvements
 
-- User authentication and cloud sync so data follows you across devices
 - Google Calendar API integration for importing existing schedules
 - Study analytics and time tracking -- how long you actually spend vs. what you planned
 - Collaborative study groups with shared task boards
 - Push notifications for upcoming deadlines
 - PWA support for offline access and home screen install
+- OAuth integration (Google, GitHub) for single sign-on
 
 ---
 

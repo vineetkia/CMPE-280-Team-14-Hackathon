@@ -28,7 +28,7 @@ export function ChatInput({ input, onInputChange, onSend, isLoading }: ChatInput
   );
 
   return (
-    <div className="p-6 border-t border-[var(--border)]">
+    <div className="p-3 md:p-4 border-t border-[var(--border)]">
       <div className="flex gap-3">
         <Textarea
           value={input}
@@ -48,7 +48,7 @@ export function ChatInput({ input, onInputChange, onSend, isLoading }: ChatInput
           onClick={onSend}
           disabled={!input.trim() || isLoading}
           aria-label="Send message"
-          className="bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-lg hover:shadow-[#667eea]/30 h-[60px] px-6"
+          className="bg-[var(--primary-solid)] hover:shadow-lg hover: h-[60px] px-6"
         >
           <Send className="w-5 h-5" />
         </Button>
