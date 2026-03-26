@@ -31,6 +31,7 @@ services:
       - .env.local
     environment:
       DATABASE_URL: postgresql://studypilot:studypilot_secret@db:5432/studypilot
+      DISABLE_SECURE_COOKIE: "true"
     depends_on:
       db:
         condition: service_healthy
