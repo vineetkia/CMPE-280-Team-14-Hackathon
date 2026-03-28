@@ -65,9 +65,11 @@
 
 **The Problem:** College students are overwhelmed. They juggle assignments across Canvas, keep deadlines in their heads, and use scattered tools that don't talk to each other -- Google Calendar for events, a notes app for todos, and random websites for study help. There is no single place where a student can see everything they need to do, plan their study time, and get instant help understanding course material.
 
-**Our Solution:** StudyPilot is a unified study dashboard that brings everything into one place. Instead of switching between five different apps, students open StudyPilot and immediately see their todos, assignments, calendar, and can ask an AI tutor for help -- all in one tab. The AI doesn't just answer questions; it looks at your actual assignments and deadlines to generate personalized study plans and suggest tasks you should create. For students with disabilities, the entire app can be controlled by voice alone -- no keyboard or mouse required.
+**Our Solution:** StudyPilot is a unified study dashboard that brings everything into one place. Instead of switching between five different apps, students open StudyPilot and immediately see their todos, assignments, calendar, and can ask an AI tutor for help -- all in one tab. The AI doesn't just answer questions; it looks at your actual assignments and deadlines to generate personalized study plans and suggest tasks you should create.
 
-**In one sentence:** StudyPilot is an AI-powered study companion that replaces the scattered mess of student productivity tools with a single, intelligent dashboard.
+**Designed for Everyone, Including Differently-Abled Students:** Accessibility is not an afterthought in StudyPilot -- it is a core design principle. Students with visual impairments, motor disabilities, or learning differences can operate the entire application using voice commands alone, with no keyboard or mouse required. The voice assistant -- powered by Azure Neural Speech-to-Text and Text-to-Speech -- lets users create and manage todos, navigate between pages, ask AI study questions, and receive spoken responses, all hands-free. Combined with WCAG AA compliance, screen reader support, keyboard navigation, and `prefers-reduced-motion` for users with vestibular disorders, StudyPilot ensures that every student can manage their studies independently, regardless of ability.
+
+**In one sentence:** StudyPilot is an AI-powered, voice-accessible study companion that replaces the scattered mess of student productivity tools with a single, intelligent, and inclusive dashboard.
 
 ---
 
