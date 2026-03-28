@@ -55,6 +55,7 @@
 | Vritika Malhotra | vritika.malhotra@sjsu.edu | [@VritikaMalhotra](https://github.com/VritikaMalhotra) |
 | Disha Jadav | disha.jadav@sjsu.edu | [@dishajadav12](https://github.com/dishajadav12) |
 | Kumar Harsh | kumar.harsh@sjsu.edu | [@KHarsh98](https://github.com/KHarsh98) |
+| Sriram Lakumarapu | sriram.lakumarapu@sjsu.edu | [@SriramLakumarapu](https://github.com/SriramLakumarapu) |
 
 **Instructor:** Dr. Xiuduan Fang
 
@@ -131,6 +132,9 @@ Built the Assignments and Calendar modules with full CRUD functionality. Created
 
 ### Kumar Harsh
 Owned the Todos module, the comprehensive test suite, and shared infrastructure. Built the Todo Manager page with TodoForm, TodoItem, TodoFilters, TodoHeader, and TodoAISuggestions (AI-powered task recommendation with one-click or bulk-add). Implemented the core data layer including all custom hooks (`useTodos`, `useAssignments`, `useEvents`, `useConversations`, `useLocalStorage`, `useReducedMotion`, `useToast`), the type system, design token constants, the glassmorphism CSS variable system, and the animation library with 15+ reusable Framer Motion variants. Wrote 315 unit tests across 52 test files achieving 87%+ code coverage. Created the ThemeContext, mock data seeding system, and the Framer Motion test mock.
+
+### Sriram Lakumarapu
+Owned the Docker infrastructure and voice system visual layer. Built the entire Docker containerization setup -- Dockerfile with multi-stage build (deps → builder → runner), docker-compose.yml with PostgreSQL 16 Alpine and Next.js services, docker-entrypoint.sh for automated Prisma migrations on startup, and .dockerignore for optimized build context. Set up the Prisma client with connection pooling and created the database migration for user authentication tables with foreign key constraints. Developed the voice assistant's visual feedback system including the WebGL Orb renderer with custom GLSL shaders (siri-orb.glsl.ts), orb state management (OrbStates.ts), voice transcript overlay component (VoiceTranscript.tsx), and audio feedback sounds for voice activation/deactivation. Built the VoiceInput component with Web Speech API integration and speech type definitions. Integrated the voice orb into the main app layout (ClientLayout). Created API endpoints for health checks (/api/health with database connectivity verification) and Azure Speech token management (/api/speech-token with 9-minute caching). Migrated the assignments and events hooks from localStorage to REST API persistence. Maintained environment configuration (.env.example, .gitignore) and authored README documentation updates.
 
 ---
 
